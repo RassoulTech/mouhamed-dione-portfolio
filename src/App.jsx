@@ -292,41 +292,40 @@ function Navbar() {
     };
   }, [open]);
 
-  const darkText = !scrolled;
-
   return (
     <>
+      {/* ===== DESKTOP / WIDE PILL (md+) ===== */}
       <nav
-        className={`fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-magnetic w-[min(960px,calc(100%-1.25rem))] sm:w-auto ${
+        className={`hidden md:flex fixed left-1/2 -translate-x-1/2 z-50 items-center gap-1.5 transition-all duration-500 ease-magnetic ${
           scrolled
-            ? "top-3 sm:top-4 bg-snow/80 dark:bg-ink/70 backdrop-blur-2xl border border-ink/10 dark:border-snow/10 shadow-[0_15px_50px_-20px_rgba(28,28,30,0.3)]"
-            : "top-4 sm:top-5 bg-ink/30 backdrop-blur-xl border border-snow/15"
-        } rounded-full pl-2 pr-2 py-2 flex items-center gap-1.5`}
+            ? "top-4 bg-snow/80 dark:bg-ink/70 backdrop-blur-2xl border border-ink/10 dark:border-snow/10 shadow-[0_15px_50px_-20px_rgba(28,28,30,0.3)]"
+            : "top-5 bg-ink/30 backdrop-blur-xl border border-snow/15"
+        } rounded-full pl-2 pr-2 py-2`}
       >
         {/* Brand */}
         <a
           href="#hero"
-          className={`flex items-center gap-2 pl-3 pr-3 sm:pr-4 py-1.5 rounded-full lift transition-colors duration-500 ${
+          className={`flex items-center gap-2 pl-2.5 pr-4 py-1 rounded-full lift transition-colors duration-500 ${
             scrolled ? "text-ink dark:text-snow" : "text-snow"
           }`}
         >
-          <span className="relative w-2 h-2 rounded-full bg-blue">
-            <span className="absolute inset-0 rounded-full bg-blue animate-ping opacity-60" />
-          </span>
+          <img
+            src="/monLogo.jpeg"
+            alt=""
+            className="w-7 h-7 rounded-full object-cover border border-blue/50 shadow-sm"
+          />
           <span className="text-[13px] font-extrabold tracking-tightest">
             {PROFILE.initials}
           </span>
         </a>
 
-        {/* Separator */}
         <span
-          className={`hidden md:block h-5 w-px transition-colors duration-500 ${
+          className={`h-5 w-px transition-colors duration-500 ${
             scrolled ? "bg-ink/15 dark:bg-snow/15" : "bg-snow/20"
           }`}
         />
 
-        {/* Desktop nav links */}
-        <ul className="hidden md:flex items-center gap-0.5">
+        <ul className="flex items-center gap-0.5">
           {NAV_LINKS.map((l) => {
             const isActive = active === l.id;
             return (
@@ -355,12 +354,11 @@ function Navbar() {
         </ul>
 
         <span
-          className={`hidden md:block h-5 w-px transition-colors duration-500 ${
+          className={`h-5 w-px transition-colors duration-500 ${
             scrolled ? "bg-ink/15 dark:bg-snow/15" : "bg-snow/20"
           }`}
         />
 
-        {/* Theme toggle */}
         <button
           type="button"
           onClick={toggle}
@@ -391,36 +389,102 @@ function Navbar() {
           />
         </button>
 
-        {/* CV CTA */}
         <CVButton
           ariaLabel="Telecharger mon CV en PDF"
-          className="magnetic group ml-0.5 relative inline-flex items-center gap-2 bg-blue text-snow text-[12.5px] font-semibold pl-3.5 pr-3.5 sm:pl-4 sm:pr-4 py-2 rounded-full overflow-hidden shadow-[0_10px_30px_-10px_rgba(46,91,255,0.7)]"
+          className="magnetic group ml-0.5 relative inline-flex items-center gap-2 bg-blue text-snow text-[12.5px] font-semibold pl-4 pr-4 py-2 rounded-full overflow-hidden shadow-[0_10px_30px_-10px_rgba(46,91,255,0.7)]"
         >
           <span className="absolute inset-0 bg-blue-deep translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-magnetic" />
           <span className="relative flex items-center gap-2">
             <Download size={13} strokeWidth={2.6} />
-            <span className="hidden sm:inline">CV</span>
+            <span>CV</span>
           </span>
         </CVButton>
-
-        {/* Mobile menu trigger */}
-        <button
-          type="button"
-          onClick={() => setOpen((o) => !o)}
-          aria-label="Menu"
-          aria-expanded={open}
-          className={`md:hidden magnetic w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-500 ml-0.5 ${
-            scrolled
-              ? "bg-ink/[0.06] dark:bg-snow/10 text-ink dark:text-snow"
-              : "bg-snow/10 text-snow"
-          }`}
-        >
-          {open ? <X size={15} strokeWidth={2.4} /> : <Menu size={15} strokeWidth={2.4} />}
-        </button>
       </nav>
 
-      {/* Mobile drawer */}
+      {/* ===== MOBILE PILL (< md) ===== */}
+      <nav
+        className={`md:hidden fixed z-50 flex items-center justify-between gap-2 transition-all duration-500 ease-magnetic ${
+          scrolled
+            ? "top-3 left-3 right-3 bg-snow/85 dark:bg-ink/75 backdrop-blur-2xl border border-ink/10 dark:border-snow/10 shadow-[0_15px_40px_-20px_rgba(28,28,30,0.35)]"
+            : "top-4 left-4 right-4 bg-ink/35 backdrop-blur-xl border border-snow/15"
+        } rounded-full pl-2 pr-2 py-1.5`}
+      >
+        {/* Brand — left */}
+        <a
+          href="#hero"
+          className={`flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full lift ${
+            scrolled ? "text-ink dark:text-snow" : "text-snow"
+          }`}
+          aria-label="Mouhamed Dione — accueil"
+        >
+          <img
+            src="/monLogo.jpeg"
+            alt=""
+            className="w-7 h-7 rounded-full object-cover border border-blue/50 shadow-sm"
+          />
+          <span className="text-[12.5px] font-extrabold tracking-tightest">
+            {PROFILE.initials}
+          </span>
+        </a>
+
+        {/* Right cluster — theme + burger */}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={`Activer le mode ${theme === "dark" ? "clair" : "sombre"}`}
+            className={`magnetic relative w-9 h-9 rounded-full flex items-center justify-center overflow-hidden ${
+              scrolled
+                ? "bg-ink/[0.06] dark:bg-snow/10 text-ink dark:text-snow"
+                : "bg-snow/10 text-snow"
+            }`}
+          >
+            <Sun
+              size={14}
+              strokeWidth={2}
+              className={`absolute transition-all duration-500 ${
+                theme === "dark"
+                  ? "translate-y-0 opacity-100"
+                  : "-translate-y-6 opacity-0"
+              }`}
+            />
+            <Moon
+              size={14}
+              strokeWidth={2}
+              className={`absolute transition-all duration-500 ${
+                theme === "dark"
+                  ? "translate-y-6 opacity-0"
+                  : "translate-y-0 opacity-100"
+              }`}
+            />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={open}
+            aria-controls="mobile-drawer"
+            className={`magnetic w-9 h-9 rounded-full flex items-center justify-center ${
+              open
+                ? "bg-blue text-snow"
+                : scrolled
+                ? "bg-ink/[0.06] dark:bg-snow/10 text-ink dark:text-snow"
+                : "bg-snow/10 text-snow"
+            }`}
+          >
+            {open ? (
+              <X size={16} strokeWidth={2.4} />
+            ) : (
+              <Menu size={16} strokeWidth={2.4} />
+            )}
+          </button>
+        </div>
+      </nav>
+
+      {/* ===== MOBILE DRAWER ===== */}
       <div
+        id="mobile-drawer"
         className={`md:hidden fixed inset-0 z-40 transition-opacity duration-500 ease-magnetic ${
           open
             ? "opacity-100 pointer-events-auto"
@@ -430,41 +494,121 @@ function Navbar() {
         <div
           className="absolute inset-0 bg-ink/85 backdrop-blur-2xl"
           onClick={() => setOpen(false)}
+          aria-hidden="true"
         />
         <div
-          className={`absolute top-0 left-0 right-0 bg-ink text-snow border-b border-snow/10 pt-24 pb-8 px-6 transition-transform duration-500 ease-magnetic ${
+          className={`absolute top-0 left-0 right-0 bg-ink text-snow border-b border-snow/10 rounded-b-[2rem] pt-20 pb-7 px-5 sm:px-7 transition-transform duration-500 ease-magnetic max-h-[100dvh] overflow-y-auto ${
             open ? "translate-y-0" : "-translate-y-full"
           }`}
         >
-          <ul className="flex flex-col gap-1 mb-6">
+          {/* Identity card */}
+          <div className="flex items-center gap-4 p-4 mb-6 rounded-2xl bg-snow/[0.04] border border-snow/10">
+            <img
+              src="/monLogo.jpeg"
+              alt="Logo Mouhamed Dione"
+              className="w-12 h-12 rounded-full object-cover border-2 border-blue/60"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-sans font-bold text-snow text-[15px] tracking-tight truncate">
+                Mouhamed Dione
+              </p>
+              <p className="font-mono text-[10px] tracking-[0.22em] uppercase text-snow/55 mt-0.5">
+                Dev Web · Comm. Digitale
+              </p>
+            </div>
+            <span className="relative w-2 h-2 rounded-full bg-emerald-400 shrink-0" aria-label="En ligne">
+              <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
+            </span>
+          </div>
+
+          {/* Nav links */}
+          <ul className="flex flex-col mb-6">
             {NAV_LINKS.map((l, i) => (
               <li key={l.id}>
                 <a
                   href={`#${l.id}`}
                   onClick={() => setOpen(false)}
-                  className="flex items-center justify-between py-4 border-b border-snow/10 group"
+                  className={`flex items-center justify-between py-3.5 border-b border-snow/10 group ${
+                    active === l.id ? "text-blue" : "text-snow"
+                  }`}
                 >
                   <span className="flex items-center gap-4">
-                    <span className="font-mono text-[10px] text-snow/40 w-6">
+                    <span className={`font-mono text-[10px] w-6 ${active === l.id ? "text-blue" : "text-snow/40"}`}>
                       {String(i + 1).padStart(2, "0")}
                     </span>
-                    <span className="font-sans text-snow text-lg group-hover:text-blue transition-colors">
+                    <span className="font-sans text-[17px] group-hover:text-blue transition-colors">
                       {l.label}
                     </span>
                   </span>
                   <ArrowUpRight
-                    size={18}
-                    className="text-snow/40 group-hover:text-blue group-hover:translate-x-0.5 transition-all"
+                    size={17}
+                    className={`group-hover:text-blue group-hover:translate-x-0.5 transition-all ${
+                      active === l.id ? "text-blue" : "text-snow/40"
+                    }`}
                   />
                 </a>
               </li>
             ))}
           </ul>
-          <div className="flex items-center justify-between pt-4 border-t border-snow/10">
-            <span className="font-mono text-[10px] tracking-widest uppercase text-snow/50">
+
+          {/* Primary CTA inside drawer */}
+          <CVButton
+            ariaLabel="Telecharger mon CV en PDF"
+            className="magnetic group relative w-full inline-flex items-center justify-center gap-3 bg-blue text-snow px-6 py-4 rounded-full font-semibold text-[14px] overflow-hidden shadow-[0_15px_40px_-12px_rgba(46,91,255,0.7)]"
+          >
+            <span className="absolute inset-0 bg-blue-deep translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-magnetic" />
+            <span className="relative flex items-center gap-3">
+              Telecharger mon CV
+              <Download size={15} strokeWidth={2.4} />
+            </span>
+          </CVButton>
+
+          {/* Quick socials */}
+          <div className="mt-6 grid grid-cols-3 gap-2">
+            <a
+              href={PROFILE.linkedin}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+              className="magnetic flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl bg-snow/[0.04] border border-snow/10 hover:border-blue/40"
+              aria-label="LinkedIn"
+            >
+              <Linkedin size={16} className="text-blue" strokeWidth={1.8} />
+              <span className="font-mono text-[9px] tracking-widest uppercase text-snow/60">LinkedIn</span>
+            </a>
+            <a
+              href={PROFILE.github}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => setOpen(false)}
+              className="magnetic flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl bg-snow/[0.04] border border-snow/10 hover:border-blue/40"
+              aria-label="GitHub"
+            >
+              <Github size={16} className="text-blue" strokeWidth={1.8} />
+              <span className="font-mono text-[9px] tracking-widest uppercase text-snow/60">GitHub</span>
+            </a>
+            <a
+              href={`mailto:${PROFILE.email}`}
+              onClick={() => setOpen(false)}
+              className="magnetic flex flex-col items-center justify-center gap-1.5 py-3 rounded-2xl bg-snow/[0.04] border border-snow/10 hover:border-blue/40"
+              aria-label="Email"
+            >
+              <Mail size={16} className="text-blue" strokeWidth={1.8} />
+              <span className="font-mono text-[9px] tracking-widest uppercase text-snow/60">Email</span>
+            </a>
+          </div>
+
+          {/* Footer line */}
+          <div className="flex items-center justify-between mt-6 pt-5 border-t border-snow/10">
+            <span className="font-mono text-[10px] tracking-widest uppercase text-snow/45">
               {PROFILE.city}
             </span>
-            <span className="font-mono text-[10px] tracking-widest uppercase text-snow/50">
+            <span className="font-mono text-[10px] tracking-widest uppercase text-snow/45 flex items-center gap-2">
+              {theme === "dark" ? (
+                <Moon size={11} strokeWidth={2} className="text-blue" />
+              ) : (
+                <Sun size={11} strokeWidth={2} className="text-blue" />
+              )}
               Theme {theme}
             </span>
           </div>
