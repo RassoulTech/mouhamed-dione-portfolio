@@ -514,6 +514,17 @@ function isIOSLike() {
   return false;
 }
 
+/* Broad mobile detection: catches iOS, Android (Chrome/Opera/Firefox/Samsung),
+   Opera Mini, Windows Mobile, KaiOS. On these surfaces the <a download>
+   attribute is unreliable for blob URLs, so we route through a pre-opened
+   tab instead. */
+function isMobileLike() {
+  if (typeof navigator === "undefined") return false;
+  if (isIOSLike()) return true;
+  const ua = navigator.userAgent || navigator.vendor || "";
+  return /Android|Mobile|Mobi|Opera Mini|Opera Mobi|IEMobile|KAIOS/i.test(ua);
+}
+
 function isInStandalonePWA() {
   if (typeof window === "undefined") return false;
   return (
@@ -522,41 +533,113 @@ function isInStandalonePWA() {
   );
 }
 
-/* Universal PDF delivery — works on iOS Safari (where `download` is ignored),
-   Android Chrome, and every desktop browser.
-   - iOS + a pre-opened tab : navigate that tab to the blob URL. This is the
-     ONLY 100%-reliable path on iPhone because the tab was opened during the
-     synchronous click handler, so it isn't subject to the popup blocker.
-   - iOS + PWA standalone   : navigate the current view (no tabs available).
-   - iOS + no pre-window    : fallback to a programmatic anchor click.
-   - Anything else          : <a download> for a real file save. */
+/* Open a pre-rendered "Generation du CV..." tab synchronously during the
+   user gesture. The async PDF build then redirects this tab to the blob URL.
+   This pattern bypasses popup blockers on iOS Safari AND mobile Opera. */
+function openLoadingTab() {
+  if (typeof window === "undefined") return null;
+  let w = null;
+  try {
+    w = window.open("about:blank", "_blank");
+  } catch {
+    return null;
+  }
+  if (!w) return null;
+  try {
+    w.document.open();
+    w.document.write(`<!doctype html><html lang="fr"><head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#1C1C1E" />
+<title>Generation du CV...</title>
+<style>
+  html,body{margin:0;height:100%;background:#1C1C1E;color:#FAFAFA;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    display:flex;align-items:center;justify-content:center;}
+  .wrap{text-align:center;padding:24px;}
+  .ring{width:42px;height:42px;border-radius:50%;
+    border:3px solid rgba(250,250,250,0.15);border-top-color:#2E5BFF;
+    animation:spin .9s linear infinite;margin:0 auto 18px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  h1{margin:0;font-size:14px;font-weight:600;letter-spacing:0.18em;
+    text-transform:uppercase;color:#FAFAFA;}
+  p{margin:8px 0 0;font-size:12px;color:rgba(250,250,250,0.55);}
+  .accent{color:#2E5BFF;}
+</style></head><body>
+<div class="wrap">
+  <div class="ring" aria-hidden="true"></div>
+  <h1>Generation du CV<span class="accent">.</span></h1>
+  <p>Mouhamed Dione &middot; Portfolio</p>
+</div>
+</body></html>`);
+    w.document.close();
+  } catch {
+    /* Cross-origin or sandboxed — keep the empty tab and let navigation handle it. */
+  }
+  return w;
+}
+
+/* Universal PDF delivery. Strategy by surface:
+   - Mobile (iOS, Android, Opera/Opera Mini) + pre-opened tab : navigate the
+     tab to the blob URL. The tab was opened during the click event so it
+     escapes popup blockers everywhere.
+   - Mobile + PWA standalone : navigate the current view (no tabs available).
+   - Mobile + tab was blocked : <a download target="_blank"> AND a 600ms
+     fallback that navigates the current tab.
+   - Desktop : classic <a download> -> file lands in Downloads. */
 function deliverPDF(doc, filename, preWindow) {
   const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
-  const ios = isIOSLike();
 
-  if (ios) {
+  if (isMobileLike()) {
     if (preWindow && !preWindow.closed) {
-      preWindow.location.href = url;
-      setTimeout(() => URL.revokeObjectURL(url), 120_000);
+      try {
+        preWindow.location.replace(url);
+      } catch {
+        preWindow.location.href = url;
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 180_000);
       return;
     }
+
     if (isInStandalonePWA()) {
       window.location.href = url;
       return;
     }
+
+    /* No pre-window: best-effort. Anchor with target=_blank + download.
+       If the new tab is blocked, navigate current tab after a short delay. */
     const a = document.createElement("a");
     a.href = url;
+    a.download = filename;
     a.target = "_blank";
     a.rel = "noopener";
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 120_000);
+
+    const navTimer = setTimeout(() => {
+      if (!document.hidden) {
+        try {
+          window.location.href = url;
+        } catch {
+          /* ignore */
+        }
+      }
+    }, 700);
+
+    const onVis = () => {
+      if (document.hidden) clearTimeout(navTimer);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    setTimeout(() => URL.revokeObjectURL(url), 180_000);
     return;
   }
 
-  // Standard browsers — true download
+  /* Desktop — true file download */
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
@@ -606,25 +689,33 @@ export async function generateCV(options = {}) {
   deliverPDF(doc, "mouhamed-dione-cv-2026.pdf", preWindow);
 }
 
-/* Public entrypoint to wire into onClick handlers.
-   Synchronously pre-opens a tab on iOS (preserves the user activation that
-   later authorises navigation), then runs the async PDF build. */
+/* Public entrypoint wired into every Download CV onClick.
+   On any mobile surface (iOS, Android, Opera, Opera Mini, KaiOS) we
+   synchronously open a loading tab BEFORE the async PDF build, so the
+   user-activation flag survives the await. The tab is then redirected
+   to the generated blob URL. */
 export function triggerCVDownload() {
   let preWindow = null;
   if (
     typeof window !== "undefined" &&
-    isIOSLike() &&
+    isMobileLike() &&
     !isInStandalonePWA()
   ) {
-    try {
-      preWindow = window.open("about:blank", "_blank");
-    } catch {
-      preWindow = null;
-    }
+    preWindow = openLoadingTab();
   }
   return generateCV({ preWindow }).catch((err) => {
     console.error("CV generation failed:", err);
-    if (preWindow && !preWindow.closed) preWindow.close();
+    if (preWindow && !preWindow.closed) {
+      try {
+        preWindow.document.title = "Echec";
+        preWindow.document.body.innerHTML =
+          '<div style="padding:24px;font-family:system-ui;color:#FAFAFA;background:#1C1C1E;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;">' +
+          '<div><h1 style="margin:0;font-size:16px;">La generation a echoue.</h1>' +
+          '<p style="margin:10px 0 0;color:#999;font-size:13px;">Reessaie dans un instant ou ferme cet onglet.</p></div></div>';
+      } catch {
+        preWindow.close();
+      }
+    }
     throw err;
   });
 }
