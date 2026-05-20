@@ -498,8 +498,80 @@ function drawMainContent(doc) {
   });
 }
 
+/* ----------- PLATFORM HELPERS ----------- */
+function isIOSLike() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || navigator.vendor || "";
+  // iPhone / iPod / iPad classic
+  if (/iPad|iPhone|iPod/.test(ua)) return true;
+  // iPadOS 13+ identifies as Mac with touch
+  if (
+    navigator.platform === "MacIntel" &&
+    typeof navigator.maxTouchPoints === "number" &&
+    navigator.maxTouchPoints > 1
+  )
+    return true;
+  return false;
+}
+
+function isInStandalonePWA() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.navigator?.standalone === true ||
+    window.matchMedia?.("(display-mode: standalone)").matches === true
+  );
+}
+
+/* Universal PDF delivery — works on iOS Safari (where `download` is ignored),
+   Android Chrome, and every desktop browser.
+   - iOS + a pre-opened tab : navigate that tab to the blob URL. This is the
+     ONLY 100%-reliable path on iPhone because the tab was opened during the
+     synchronous click handler, so it isn't subject to the popup blocker.
+   - iOS + PWA standalone   : navigate the current view (no tabs available).
+   - iOS + no pre-window    : fallback to a programmatic anchor click.
+   - Anything else          : <a download> for a real file save. */
+function deliverPDF(doc, filename, preWindow) {
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  const ios = isIOSLike();
+
+  if (ios) {
+    if (preWindow && !preWindow.closed) {
+      preWindow.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 120_000);
+      return;
+    }
+    if (isInStandalonePWA()) {
+      window.location.href = url;
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 120_000);
+    return;
+  }
+
+  // Standard browsers — true download
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2_000);
+}
+
 /* ----------- BUILDER ----------- */
-export async function generateCV() {
+export async function generateCV(options = {}) {
+  const { preWindow = null } = options;
+
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({
     unit: "mm",
@@ -526,9 +598,46 @@ export async function generateCV() {
     title: "Mouhamed Dione — Curriculum Vitae",
     subject: "CV — Developpeur Web & Communication Digitale",
     author: "Mouhamed Dione",
-    keywords: "developpeur, web, fullstack, vue, nextjs, php, communication, branding, senegal",
-    creator: "mouhamed-dione.studio",
+    keywords:
+      "developpeur, web, fullstack, vue, nextjs, php, communication, branding, senegal",
+    creator: "mouhamed-dione.vercel.app",
   });
 
-  doc.save("mouhamed-dione-cv-2026.pdf");
+  deliverPDF(doc, "mouhamed-dione-cv-2026.pdf", preWindow);
+}
+
+/* Public entrypoint to wire into onClick handlers.
+   Synchronously pre-opens a tab on iOS (preserves the user activation that
+   later authorises navigation), then runs the async PDF build. */
+export function triggerCVDownload() {
+  let preWindow = null;
+  if (
+    typeof window !== "undefined" &&
+    isIOSLike() &&
+    !isInStandalonePWA()
+  ) {
+    try {
+      preWindow = window.open("about:blank", "_blank");
+    } catch {
+      preWindow = null;
+    }
+  }
+  return generateCV({ preWindow }).catch((err) => {
+    console.error("CV generation failed:", err);
+    if (preWindow && !preWindow.closed) preWindow.close();
+    throw err;
+  });
+}
+
+/* Warm the jspdf chunk early so the first click stays inside the user
+   activation window — critical on iOS where async delays can drop the
+   "transient activation" flag that authorises popups/tab-opens. */
+export function prewarmCV() {
+  if (typeof window === "undefined") return;
+  const start = () => import("jspdf").catch(() => {});
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(start, { timeout: 2_500 });
+  } else {
+    setTimeout(start, 1_500);
+  }
 }

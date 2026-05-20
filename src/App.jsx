@@ -28,7 +28,7 @@ import {
   MessageSquare,
   User,
 } from "lucide-react";
-import { generateCV } from "./utils/generateCV";
+import { triggerCVDownload, prewarmCV } from "./utils/generateCV";
 import "./App.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -239,12 +239,12 @@ const NAV_LINKS = [
   { id: "contact", label: "Contact" },
 ];
 
-/* Helper for CV CTA — clicking triggers generation + download. */
+/* Helper for CV CTA — triggers cross-platform PDF delivery (iOS-safe). */
 function CVButton({ children, className = "", ariaLabel = "Telecharger mon CV" }) {
   return (
     <button
       type="button"
-      onClick={generateCV}
+      onClick={() => triggerCVDownload()}
       aria-label={ariaLabel}
       className={className}
     >
@@ -1652,9 +1652,7 @@ function ResumeCard() {
                 </CVButton>
                 <button
                   type="button"
-                  onClick={() => {
-                    generateCV();
-                  }}
+                  onClick={() => triggerCVDownload()}
                   className="magnetic inline-flex items-center justify-center gap-3 border border-ink/15 dark:border-snow/20 text-ink dark:text-snow px-5 sm:px-6 py-3.5 sm:py-4 rounded-full font-semibold text-[13.5px] sm:text-[14px] hover:border-ink dark:hover:border-snow hover:bg-ink/[0.03] dark:hover:bg-snow/5"
                 >
                   Generer & Apercu
@@ -2126,6 +2124,9 @@ function Footer() {
 export default function App() {
   useEffect(() => {
     const id = setTimeout(() => ScrollTrigger.refresh(), 250);
+    /* Pre-load jsPDF chunk while the user reads the hero, so the very first
+       Download click stays inside the iOS Safari user-activation window. */
+    prewarmCV();
     return () => clearTimeout(id);
   }, []);
 
