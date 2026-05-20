@@ -1673,7 +1673,7 @@ function ResumeCard() {
 }
 
 /* -------------------- CONTACT FORM -------------------- */
-const FORMSUBMIT_ENDPOINT = "https://formsubmit.co/ajax/dionemhd1@gmail.com";
+const CONTACT_ENDPOINT = "/api/contact";
 
 function ContactForm() {
   const [data, setData] = useState({
@@ -1702,31 +1702,28 @@ function ContactForm() {
     setErrorMsg("");
 
     try {
-      const res = await fetch(FORMSUBMIT_ENDPOINT, {
+      const res = await fetch(CONTACT_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
         body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          subject: data.subject || "Nouveau message via portfolio",
-          message: data.message,
-          _subject: `Portfolio · ${data.name} — ${data.subject || "Message"}`,
-          _template: "table",
-          _captcha: "false",
+          name: data.name.trim(),
+          email: data.email.trim(),
+          subject: data.subject.trim(),
+          message: data.message.trim(),
         }),
       });
 
       const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.success === "false") {
-        throw new Error(json.message || "Echec de l'envoi.");
+      if (!res.ok || json.ok === false) {
+        throw new Error(json.error || "Echec de l'envoi.");
       }
 
       setStatus("success");
       setData({ name: "", email: "", subject: "", message: "" });
-      setTimeout(() => setStatus("idle"), 6000);
+      setTimeout(() => setStatus("idle"), 8000);
     } catch (err) {
       setStatus("error");
       setErrorMsg(err.message || "Une erreur reseau est survenue.");
