@@ -1,29 +1,35 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { buildHtmlEmail, buildPlainTextEmail } from "./_email-template.js";
 
-/* Vercel serverless function — runs in the Node.js runtime.
-   Contract:
-     POST /api/contact
+/* Vercel serverless function — Node.js runtime.
+   POST /api/contact
      body: { name, email, subject?, message, _honey? }
-     200 -> { ok: true, id }
+     200 -> { ok: true }
      400 -> { ok: false, error }
      500 -> { ok: false, error }
 
-   Env:
-     RESEND_API_KEY        required
-     CONTACT_TO_EMAIL      optional (default: dionemhd1@gmail.com)
-     CONTACT_FROM_ADDRESS  optional (default: onboarding@resend.dev)
+   Env (set on Vercel) :
+     GMAIL_USER          ex. dionemhd1@gmail.com  (required)
+     GMAIL_APP_PASSWORD  Google App Password, 16 chars, no spaces  (required)
+     CONTACT_TO_EMAIL    optional, defaults to GMAIL_USER
 */
-
-const TO_EMAIL = process.env.CONTACT_TO_EMAIL || "dionemhd1@gmail.com";
-const FROM_ADDRESS =
-  process.env.CONTACT_FROM_ADDRESS ||
-  "Portfolio Mouhamed Dione <onboarding@resend.dev>";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function reject(res, code, error) {
   return res.status(code).json({ ok: false, error });
+}
+
+function getTransport() {
+  const user = process.env.GMAIL_USER;
+  const pass = (process.env.GMAIL_APP_PASSWORD || "").replace(/\s+/g, "");
+  if (!user || !pass) return null;
+  return nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: { user, pass },
+  });
 }
 
 export default async function handler(req, res) {
@@ -32,8 +38,13 @@ export default async function handler(req, res) {
     return reject(res, 405, "Method not allowed");
   }
 
-  if (!process.env.RESEND_API_KEY) {
-    return reject(res, 500, "Service mail non configure (RESEND_API_KEY manquant).");
+  const transporter = getTransport();
+  if (!transporter) {
+    return reject(
+      res,
+      500,
+      "Service mail non configure (GMAIL_USER / GMAIL_APP_PASSWORD manquant)."
+    );
   }
 
   let payload = req.body;
@@ -52,8 +63,7 @@ export default async function handler(req, res) {
   const message = String(payload.message || "").trim();
   const honey = String(payload._honey || "");
 
-  /* Honeypot: bots auto-fill hidden fields. Silently pretend success. */
-  if (honey) return res.status(200).json({ ok: true, id: "honeypot" });
+  if (honey) return res.status(200).json({ ok: true });
 
   if (!name || name.length < 2 || name.length > 80) {
     return reject(res, 400, "Nom invalide (2-80 caracteres).");
@@ -75,30 +85,34 @@ export default async function handler(req, res) {
   const html = buildHtmlEmail({ name, email, subject, message, source });
   const text = buildPlainTextEmail({ name, email, subject, message, source });
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  const gmailUser = process.env.GMAIL_USER;
+  const to = process.env.CONTACT_TO_EMAIL || gmailUser;
 
   try {
-    const { data, error } = await resend.emails.send({
-      from: FROM_ADDRESS,
-      to: [TO_EMAIL],
-      replyTo: email,
+    await transporter.sendMail({
+      /* "from" must remain the authenticated Gmail address — providers
+         silently drop spoofed senders. We set the display name and pin
+         the sender's email into the reply-to so a single click answers
+         the visitor directly. */
+      from: `"Portfolio · Mouhamed Dione" <${gmailUser}>`,
+      to,
+      replyTo: `"${name}" <${email}>`,
       subject: `Portfolio · ${name} — ${subject || "Nouveau message"}`,
       html,
       text,
-      tags: [
-        { name: "source", value: "portfolio-contact" },
-        { name: "form", value: "v1" },
-      ],
+      headers: {
+        "X-Portfolio-Source": source,
+        "X-Portfolio-Form": "contact-v1",
+      },
     });
 
-    if (error) {
-      console.error("[contact] Resend error:", error);
-      return reject(res, 502, error.message || "Echec de l'envoi.");
-    }
-
-    return res.status(200).json({ ok: true, id: data?.id || null });
+    return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error("[contact] Unhandled error:", err);
-    return reject(res, 500, "Echec interne. Reessaye plus tard.");
+    console.error("[contact] Nodemailer error:", err);
+    const msg =
+      err?.code === "EAUTH"
+        ? "Authentification Gmail refusee (App Password invalide ou 2FA non actif)."
+        : err?.message || "Echec interne. Reessaye plus tard.";
+    return reject(res, 502, msg);
   }
 }
