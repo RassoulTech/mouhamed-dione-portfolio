@@ -1769,7 +1769,7 @@ function ContactForm() {
             autoComplete="name"
             value={data.name}
             onChange={update("name")}
-            placeholder="Awa Diop"
+            placeholder="Ton nom complet"
             className={fieldBase}
           />
         </div>
@@ -1788,7 +1788,7 @@ function ContactForm() {
             autoComplete="email"
             value={data.email}
             onChange={update("email")}
-            placeholder="awa@studio.com"
+            placeholder="Pour que je puisse te repondre"
             className={fieldBase}
           />
         </div>
@@ -1807,7 +1807,7 @@ function ContactForm() {
           type="text"
           value={data.subject}
           onChange={update("subject")}
-          placeholder="Refonte de site, mission freelance, collaboration..."
+          placeholder="L'objet de ton message"
           className={fieldBase}
         />
       </div>
