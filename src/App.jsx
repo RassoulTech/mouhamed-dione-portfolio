@@ -305,15 +305,13 @@ function Navbar() {
         {/* Brand */}
         <a
           href="#hero"
-          className={`flex items-center gap-2 pl-2.5 pr-4 py-1 rounded-full lift transition-colors duration-500 ${
+          className={`flex items-center gap-2 pl-3 pr-4 py-1.5 rounded-full lift transition-colors duration-500 ${
             scrolled ? "text-ink dark:text-snow" : "text-snow"
           }`}
         >
-          <img
-            src="/monLogo.jpeg"
-            alt=""
-            className="w-7 h-7 rounded-full object-cover border border-blue/50 shadow-sm"
-          />
+          <span className="relative w-2 h-2 rounded-full bg-blue">
+            <span className="absolute inset-0 rounded-full bg-blue animate-ping opacity-60" />
+          </span>
           <span className="text-[13px] font-extrabold tracking-tightest">
             {PROFILE.initials}
           </span>
@@ -412,16 +410,14 @@ function Navbar() {
         {/* Brand — left */}
         <a
           href="#hero"
-          className={`flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full lift ${
+          className={`flex items-center gap-2 pl-3 pr-3 py-1 rounded-full lift ${
             scrolled ? "text-ink dark:text-snow" : "text-snow"
           }`}
           aria-label="Mouhamed Dione — accueil"
         >
-          <img
-            src="/monLogo.jpeg"
-            alt=""
-            className="w-7 h-7 rounded-full object-cover border border-blue/50 shadow-sm"
-          />
+          <span className="relative w-2 h-2 rounded-full bg-blue">
+            <span className="absolute inset-0 rounded-full bg-blue animate-ping opacity-60" />
+          </span>
           <span className="text-[12.5px] font-extrabold tracking-tightest">
             {PROFILE.initials}
           </span>
@@ -504,8 +500,8 @@ function Navbar() {
           {/* Identity card */}
           <div className="flex items-center gap-4 p-4 mb-6 rounded-2xl bg-snow/[0.04] border border-snow/10">
             <img
-              src="/monLogo.jpeg"
-              alt="Logo Mouhamed Dione"
+              src="/img.png"
+              alt="Portrait de Mouhamed Dione"
               className="w-12 h-12 rounded-full object-cover border-2 border-blue/60"
             />
             <div className="flex-1 min-w-0">
