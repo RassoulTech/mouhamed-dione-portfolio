@@ -139,7 +139,7 @@ const EXPERIENCES = [
     tags: ["Next.js", "Vercel", "React"],
     icon: Rocket,
     links: {
-      live: "https://gestion-pro-jet.vercel.app",
+      live: "https://gestion-pro-rassoultechs-projects.vercel.app/",
       repo: "https://github.com/RassoulTech/gestion-pro",
     },
   },
