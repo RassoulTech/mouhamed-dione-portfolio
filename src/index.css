@@ -114,6 +114,116 @@
   }
 }
 
+/* -------------------- BLOG : typographie des articles -------------------- */
+.prose-md {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #2d2d2d;
+}
+.dark .prose-md {
+  color: rgba(250, 250, 250, 0.82);
+}
+.prose-md > * + * {
+  margin-top: 1.4em;
+}
+.prose-md h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 1.95em;
+  line-height: 1.15;
+  margin-top: 2em;
+  color: #1c1c1e;
+}
+.dark .prose-md h2 {
+  color: #fafafa;
+}
+.prose-md h3 {
+  font-weight: 700;
+  font-size: 1.3em;
+  margin-top: 1.7em;
+  color: #1c1c1e;
+}
+.dark .prose-md h3 {
+  color: #fafafa;
+}
+.prose-md a {
+  color: #2e5bff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-md strong {
+  color: #1c1c1e;
+  font-weight: 700;
+}
+.dark .prose-md strong {
+  color: #fafafa;
+}
+.prose-md ul,
+.prose-md ol {
+  padding-left: 1.4em;
+}
+.prose-md ul {
+  list-style: disc;
+}
+.prose-md ol {
+  list-style: decimal;
+}
+.prose-md li {
+  margin-top: 0.5em;
+}
+.prose-md li::marker {
+  color: #2e5bff;
+}
+.prose-md blockquote {
+  border-left: 3px solid #2e5bff;
+  padding-left: 1.2em;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-size: 1.25em;
+  color: #1c1c1e;
+}
+.dark .prose-md blockquote {
+  color: #fafafa;
+}
+.prose-md code {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  background: rgba(46, 91, 255, 0.1);
+  color: #1e3fb8;
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+}
+.dark .prose-md code {
+  background: rgba(46, 91, 255, 0.18);
+  color: #c9d6ff;
+}
+.prose-md pre {
+  background: #1c1c1e;
+  color: #fafafa;
+  padding: 1.2em 1.4em;
+  border-radius: 1rem;
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+.prose-md pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+.prose-md img {
+  border-radius: 1rem;
+  border: 1px solid rgba(28, 28, 30, 0.1);
+}
+.prose-md hr {
+  border: none;
+  border-top: 1px solid rgba(28, 28, 30, 0.12);
+}
+.dark .prose-md hr {
+  border-top: 1px solid rgba(250, 250, 250, 0.12);
+}
+
 html,
 body {
   background-color: #fafafa;

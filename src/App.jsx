@@ -36,7 +36,7 @@ gsap.registerPlugin(ScrollTrigger);
 /* -------------------- THEME -------------------- */
 const ThemeContext = createContext({ theme: "light", toggle: () => {} });
 
-function ThemeProvider({ children }) {
+export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState("light");
 
   useEffect(() => {
@@ -63,7 +63,7 @@ function ThemeProvider({ children }) {
   );
 }
 
-const useTheme = () => useContext(ThemeContext);
+export const useTheme = () => useContext(ThemeContext);
 
 /* -------------------- BRAND ICONS -------------------- */
 function Linkedin({ size = 18, strokeWidth = 1.7, className = "" }) {
@@ -107,7 +107,7 @@ function Github({ size = 18, strokeWidth = 1.7, className = "" }) {
 }
 
 /* -------------------- DATA -------------------- */
-const PROFILE = {
+export const PROFILE = {
   name: "Mouhamed Dione",
   initials: "MD",
   title: "Developpeur Web · Communication Digitale",
@@ -235,6 +235,7 @@ const NAV_LINKS = [
   { id: "experience", label: "Experience" },
   { id: "skills", label: "Competences" },
   { id: "formation", label: "Formation" },
+  { id: "blog", label: "Blog", to: "/blog" },
   { id: "resume", label: "CV" },
   { id: "contact", label: "Contact" },
 ];
@@ -329,7 +330,7 @@ function Navbar() {
             return (
               <li key={l.id}>
                 <a
-                  href={`#${l.id}`}
+                  href={l.to || `#${l.id}`}
                   className={`group relative inline-flex items-center text-[12px] font-medium px-3 py-2 rounded-full lift transition-colors duration-500 ${
                     scrolled
                       ? `${
@@ -522,7 +523,7 @@ function Navbar() {
             {NAV_LINKS.map((l, i) => (
               <li key={l.id}>
                 <a
-                  href={`#${l.id}`}
+                  href={l.to || `#${l.id}`}
                   onClick={() => setOpen(false)}
                   className={`flex items-center justify-between py-3.5 border-b border-snow/10 group ${
                     active === l.id ? "text-blue" : "text-snow"
@@ -2064,7 +2065,7 @@ function Contact() {
 }
 
 /* -------------------- FOOTER -------------------- */
-function Footer() {
+export function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className="relative bg-graphite text-snow rounded-t-[3rem] sm:rounded-t-[4rem] pt-12 sm:pt-16 pb-8 sm:pb-10 px-5 sm:px-6 -mt-8">
@@ -2128,18 +2129,16 @@ export default function App() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <div className="noise relative bg-snow text-graphite dark:bg-ink dark:text-snow transition-colors duration-500">
-        <Navbar />
-        <Hero />
-        <About />
-        <Experience />
-        <SkillsRadar />
-        <Formation />
-        <ResumeCard />
-        <Contact />
-        <Footer />
-      </div>
-    </ThemeProvider>
+    <div className="noise relative bg-snow text-graphite dark:bg-ink dark:text-snow transition-colors duration-500">
+      <Navbar />
+      <Hero />
+      <About />
+      <Experience />
+      <SkillsRadar />
+      <Formation />
+      <ResumeCard />
+      <Contact />
+      <Footer />
+    </div>
   );
 }
