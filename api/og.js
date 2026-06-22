@@ -48,7 +48,7 @@ export default async function handler(req, res) {
   let title = "Le Journal";
   let description =
     "Articles tech, présence digitale et solutions concrètes pour les étudiants et entrepreneurs.";
-  let image = `${base}/img.png`;
+  let cover = "";
 
   try {
     const article = await fetchPublishedArticle(slug);
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       if (article.title) title = article.title;
       if (article.excerpt) description = article.excerpt;
       if (article.cover) {
-        image = article.cover.startsWith("http")
+        cover = article.cover.startsWith("http")
           ? article.cover
           : `${base}${article.cover.startsWith("/") ? "" : "/"}${article.cover}`;
       }
@@ -64,6 +64,11 @@ export default async function handler(req, res) {
   } catch {
     /* on garde les valeurs par défaut */
   }
+
+  // Image de partage : la couverture de l'article si elle existe,
+  // sinon une bannière design générée automatiquement (titre + couleurs).
+  const image =
+    cover || `${base}/api/og-image?title=${encodeURIComponent(title)}`;
 
   // On récupère le HTML de l'app pour que les vrais visiteurs aient bien le site.
   let html;
@@ -84,6 +89,8 @@ export default async function handler(req, res) {
     <meta property="og:title" content="${esc(title)}" />
     <meta property="og:description" content="${esc(description)}" />
     <meta property="og:image" content="${esc(image)}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:url" content="${esc(pageUrl)}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(title)}" />
