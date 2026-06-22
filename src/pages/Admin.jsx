@@ -4,6 +4,8 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 import {
   Lock,
@@ -39,6 +41,18 @@ const EMPTY = {
   date: new Date().toISOString().slice(0, 10),
   published: false,
 };
+
+/* Logo Google (G multicolore). */
+function GoogleG({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.2 5.2C39.9 36.5 44 31 44 24c0-1.3-.1-2.3-.4-3.5z" />
+    </svg>
+  );
+}
 
 /* ---------- Ecran : non configure ---------- */
 function NotConfigured() {
@@ -86,6 +100,15 @@ function LoginForm() {
     }
   };
 
+  const loginWithGoogle = async () => {
+    setError("");
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch {
+      setError("Connexion Google annulée ou refusée.");
+    }
+  };
+
   const field =
     "w-full bg-snow dark:bg-graphite/40 border border-ink/15 dark:border-snow/15 rounded-xl px-4 py-3 text-ink dark:text-snow outline-none focus:border-blue transition-colors";
 
@@ -127,6 +150,22 @@ function LoginForm() {
           Se connecter
         </button>
       </form>
+
+      <div className="flex items-center gap-3 my-5">
+        <span className="h-px flex-1 bg-ink/10 dark:bg-snow/10" />
+        <span className="font-mono text-[10px] uppercase tracking-widest text-graphite/50 dark:text-snow/40">
+          ou
+        </span>
+        <span className="h-px flex-1 bg-ink/10 dark:bg-snow/10" />
+      </div>
+
+      <button
+        type="button"
+        onClick={loginWithGoogle}
+        className="magnetic w-full inline-flex items-center justify-center gap-3 bg-snow dark:bg-graphite/40 border border-ink/15 dark:border-snow/15 text-ink dark:text-snow font-semibold px-5 py-3 rounded-xl hover:border-blue transition-colors"
+      >
+        <GoogleG /> Continuer avec Google
+      </button>
     </div>
   );
 }
@@ -447,6 +486,33 @@ function Dashboard({ user }) {
   );
 }
 
+/* ---------- Ecran : connecté mais pas autorisé ---------- */
+function Unauthorized({ email }) {
+  return (
+    <div className="max-w-md mx-auto px-6 pt-40 text-center">
+      <div className="inline-flex w-14 h-14 rounded-2xl bg-red-500/15 items-center justify-center mb-6">
+        <Lock size={22} className="text-red-500" />
+      </div>
+      <h1 className="font-serif italic text-4xl text-ink dark:text-snow">
+        Accès non autorisé
+      </h1>
+      <p className="mt-4 text-graphite dark:text-snow/70 leading-relaxed">
+        Le compte <span className="font-mono text-blue">{email}</span> n'est pas
+        autorisé à gérer ce blog. Seul l'auteur peut écrire.
+      </p>
+      <button
+        onClick={() => signOut(auth)}
+        className="magnetic mt-8 inline-flex items-center gap-2 bg-blue text-snow font-semibold px-5 py-3 rounded-xl hover:bg-blue-deep transition-colors"
+      >
+        <LogOut size={15} /> Se déconnecter
+      </button>
+    </div>
+  );
+}
+
+// Adresse autorisée à administrer (définie dans .env / Vercel).
+const ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL || "").trim().toLowerCase();
+
 /* ---------- Page /admin ---------- */
 export default function Admin() {
   const [user, setUser] = useState(undefined); // undefined = en cours de vérif
@@ -456,6 +522,9 @@ export default function Admin() {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
     return unsub;
   }, []);
+
+  const allowed =
+    user && (!ADMIN_EMAIL || (user.email || "").toLowerCase() === ADMIN_EMAIL);
 
   return (
     <div className="noise relative min-h-screen bg-snow text-graphite dark:bg-ink dark:text-snow transition-colors duration-500">
@@ -467,10 +536,12 @@ export default function Admin() {
           <Loader2 size={18} className="animate-spin text-blue" />
           <span className="font-mono text-sm">Vérification…</span>
         </div>
-      ) : user ? (
+      ) : !user ? (
+        <LoginForm />
+      ) : allowed ? (
         <Dashboard user={user} />
       ) : (
-        <LoginForm />
+        <Unauthorized email={user.email} />
       )}
     </div>
   );
