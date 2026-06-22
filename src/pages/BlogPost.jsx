@@ -10,9 +10,14 @@ import {
   Check,
   MessageCircle,
 } from "lucide-react";
+import { onAuthStateChanged } from "firebase/auth";
 import { getPostBySlug } from "../utils/posts";
+import { auth, isFirebaseConfigured } from "../lib/firebase";
 import { Footer } from "../App.jsx";
 import { BlogTopBar } from "./BlogChrome.jsx";
+
+// Email autorisé : la barre de partage n'est visible que pour l'auteur connecté.
+const ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL || "").trim().toLowerCase();
 
 /* Barre de partage — WhatsApp, LinkedIn, X, et copier le lien. */
 function ShareBar({ title }) {
@@ -82,6 +87,17 @@ export default function BlogPost() {
   const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isOwner, setIsOwner] = useState(false);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+    return onAuthStateChanged(auth, (u) => {
+      setIsOwner(
+        Boolean(u) &&
+          (!ADMIN_EMAIL || (u.email || "").toLowerCase() === ADMIN_EMAIL)
+      );
+    });
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -161,7 +177,7 @@ export default function BlogPost() {
           {post.title}
         </h1>
 
-        <ShareBar title={post.title} />
+        {isOwner && <ShareBar title={post.title} />}
 
         {post.cover && (
           <img
@@ -178,10 +194,12 @@ export default function BlogPost() {
           dangerouslySetInnerHTML={{ __html: post.html }}
         />
 
-        {/* Partage en bas aussi */}
-        <div className="mt-10 pt-8 border-t border-ink/10 dark:border-snow/10">
-          <ShareBar title={post.title} />
-        </div>
+        {/* Partage en bas — auteur connecté uniquement */}
+        {isOwner && (
+          <div className="mt-10 pt-8 border-t border-ink/10 dark:border-snow/10">
+            <ShareBar title={post.title} />
+          </div>
+        )}
 
         {/* CTA fin d'article */}
         <div className="mt-12 p-7 sm:p-9 rounded-[1.6rem] bg-ink text-snow relative overflow-hidden">
