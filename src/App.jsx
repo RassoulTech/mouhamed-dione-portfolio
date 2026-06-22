@@ -2124,13 +2124,22 @@ export function Footer() {
           >
             <Mail size={18} strokeWidth={1.7} />
           </a>
-          {isAdmin && (
+          {isAdmin ? (
             <Link
               to="/admin"
               className="magnetic inline-flex items-center gap-1.5 bg-blue/15 text-blue border border-blue/30 rounded-full px-3 py-1.5 text-[11px] font-semibold hover:bg-blue/25 transition-colors"
               aria-label="Espace administration"
             >
               <Lock size={12} strokeWidth={2.2} /> Admin
+            </Link>
+          ) : (
+            <Link
+              to="/admin"
+              className="text-snow/25 hover:text-blue lift"
+              aria-label="Connexion auteur"
+              title="Connexion auteur"
+            >
+              <Lock size={15} strokeWidth={1.7} />
             </Link>
           )}
         </div>
