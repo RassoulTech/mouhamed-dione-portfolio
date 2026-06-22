@@ -65,10 +65,23 @@ export default async function handler(req, res) {
     /* on garde les valeurs par défaut */
   }
 
-  // Image de partage : la couverture de l'article si elle existe,
-  // sinon une bannière design générée automatiquement (titre + couleurs).
-  const image =
-    cover || `${base}/api/og-image?title=${encodeURIComponent(title)}`;
+  // Format d'image adapté à la plateforme qui demande l'aperçu :
+  //  - WhatsApp aime les vignettes carrées -> bannière carrée 1080×1080
+  //  - LinkedIn / X / Facebook / Telegram   -> bannière large 1200×630
+  const ua = (req.headers["user-agent"] || "").toLowerCase();
+  const isWhatsApp = ua.includes("whatsapp");
+  const fmt = isWhatsApp ? "square" : "wide";
+  const dims = isWhatsApp ? { w: 1080, h: 1080 } : { w: 1200, h: 630 };
+
+  const enc = encodeURIComponent(title);
+  // og:image suit la plateforme ; twitter:image reste toujours large.
+  const ogImage = cover || `${base}/api/og-image?title=${enc}&format=${fmt}`;
+  const twImage = cover || `${base}/api/og-image?title=${enc}&format=wide`;
+  const dimsMeta = cover
+    ? ""
+    : `
+    <meta property="og:image:width" content="${dims.w}" />
+    <meta property="og:image:height" content="${dims.h}" />`;
 
   // On récupère le HTML de l'app pour que les vrais visiteurs aient bien le site.
   let html;
@@ -88,14 +101,12 @@ export default async function handler(req, res) {
     <meta property="og:site_name" content="Mouhamed Dione" />
     <meta property="og:title" content="${esc(title)}" />
     <meta property="og:description" content="${esc(description)}" />
-    <meta property="og:image" content="${esc(image)}" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image" content="${esc(ogImage)}" />${dimsMeta}
     <meta property="og:url" content="${esc(pageUrl)}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(title)}" />
     <meta name="twitter:description" content="${esc(description)}" />
-    <meta name="twitter:image" content="${esc(image)}" />
+    <meta name="twitter:image" content="${esc(twImage)}" />
   `;
 
   // Remplace l'ancien <title> puis injecte nos balises avant </head>.
@@ -103,9 +114,8 @@ export default async function handler(req, res) {
   html = html.replace(/<\/head>/i, `${tags}</head>`);
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  res.setHeader(
-    "Cache-Control",
-    "public, s-maxage=300, stale-while-revalidate=600"
-  );
+  // Pas de cache partagé : la réponse dépend de l'User-Agent (format par plateforme).
+  res.setHeader("Cache-Control", "no-store, must-revalidate");
+  res.setHeader("Vary", "User-Agent");
   return res.status(200).send(html);
 }
