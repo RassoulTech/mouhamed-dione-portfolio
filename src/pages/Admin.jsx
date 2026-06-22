@@ -80,6 +80,26 @@ function NotConfigured() {
   );
 }
 
+/* Traduit le code d'erreur Firebase en message clair (et affiche le code brut si inconnu). */
+function authErrorMessage(err) {
+  const code = err?.code || "";
+  const map = {
+    "auth/invalid-credential": "Email ou mot de passe incorrect.",
+    "auth/wrong-password": "Mot de passe incorrect.",
+    "auth/user-not-found": "Aucun compte avec cet email. Crée-le dans Firebase > Authentication > Users.",
+    "auth/invalid-email": "Email invalide.",
+    "auth/operation-not-allowed":
+      "Méthode non activée dans Firebase (Authentication > Sign-in method).",
+    "auth/unauthorized-domain":
+      "Domaine non autorisé. Ajoute ce domaine dans Firebase > Authentication > Settings > Authorized domains.",
+    "auth/popup-closed-by-user": "Fenêtre Google fermée avant la fin.",
+    "auth/cancelled-popup-request": "Connexion Google annulée.",
+    "auth/popup-blocked": "La popup Google a été bloquée par le navigateur.",
+    "auth/network-request-failed": "Problème de réseau. Réessaie.",
+  };
+  return map[code] || `Connexion refusée${code ? ` (${code})` : ""}.`;
+}
+
 /* ---------- Ecran : connexion ---------- */
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -93,8 +113,8 @@ function LoginForm() {
     setBusy(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-    } catch {
-      setError("Email ou mot de passe incorrect.");
+    } catch (err) {
+      setError(authErrorMessage(err));
     } finally {
       setBusy(false);
     }
@@ -104,8 +124,8 @@ function LoginForm() {
     setError("");
     try {
       await signInWithPopup(auth, new GoogleAuthProvider());
-    } catch {
-      setError("Connexion Google annulée ou refusée.");
+    } catch (err) {
+      setError(authErrorMessage(err));
     }
   };
 
