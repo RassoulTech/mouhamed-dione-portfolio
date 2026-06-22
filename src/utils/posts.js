@@ -7,6 +7,8 @@ import {
   setDoc,
   deleteDoc,
   serverTimestamp,
+  query,
+  where,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../lib/firebase";
 import {
@@ -38,10 +40,11 @@ export async function getAllPosts() {
   if (!isFirebaseConfigured) {
     return getLocalPosts().map(decorate);
   }
-  const snap = await getDocs(collection(db, "posts"));
-  const posts = snap.docs
-    .map((d) => ({ slug: d.id, ...d.data() }))
-    .filter((p) => p.published);
+  // On demande EXPLICITEMENT les publiés, pour que la requête respecte
+  // la règle Firestore (sinon le public se voit tout refuser).
+  const q = query(collection(db, "posts"), where("published", "==", true));
+  const snap = await getDocs(q);
+  const posts = snap.docs.map((d) => ({ slug: d.id, ...d.data() }));
   return sortByDateDesc(posts).map(decorate);
 }
 
