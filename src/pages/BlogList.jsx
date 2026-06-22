@@ -1,16 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Clock, PenTool } from "lucide-react";
-import { getAllPosts } from "../utils/blog";
+import { ArrowUpRight, Clock, PenTool, Loader2 } from "lucide-react";
+import { getAllPosts } from "../utils/posts";
 import { Footer } from "../App.jsx";
 import { BlogTopBar } from "./BlogChrome.jsx";
 
 export default function BlogList() {
-  const posts = getAllPosts();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     document.title = "Le Journal — Mouhamed Dione";
     window.scrollTo(0, 0);
+    let alive = true;
+    getAllPosts()
+      .then((p) => alive && setPosts(p))
+      .catch((e) => console.error("Chargement des articles:", e))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
   }, []);
 
   return (
@@ -36,8 +45,13 @@ export default function BlogList() {
       </header>
 
       {/* Liste des articles */}
-      <main className="max-w-5xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
-        {posts.length === 0 ? (
+      <main className="max-w-5xl mx-auto px-5 sm:px-6 py-14 sm:py-20 min-h-[40vh]">
+        {loading ? (
+          <div className="flex items-center justify-center gap-3 py-20 text-graphite/60 dark:text-snow/50">
+            <Loader2 size={18} className="animate-spin text-blue" />
+            <span className="font-mono text-sm">Chargement des articles…</span>
+          </div>
+        ) : posts.length === 0 ? (
           <p className="text-center text-graphite/60 dark:text-snow/50 font-mono text-sm py-20">
             Aucun article pour l'instant. Le premier arrive très vite.
           </p>

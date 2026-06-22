@@ -1,20 +1,118 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowUpRight, Clock, Calendar } from "lucide-react";
-import { getPostBySlug } from "../utils/blog";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  Clock,
+  Calendar,
+  Loader2,
+  Link2,
+  Check,
+  MessageCircle,
+} from "lucide-react";
+import { getPostBySlug } from "../utils/posts";
 import { Footer } from "../App.jsx";
 import { BlogTopBar } from "./BlogChrome.jsx";
 
+/* Barre de partage — WhatsApp, LinkedIn, X, et copier le lien. */
+function ShareBar({ title }) {
+  const [copied, setCopied] = useState(false);
+  const url = typeof window !== "undefined" ? window.location.href : "";
+  const text = encodeURIComponent(title);
+  const enc = encodeURIComponent(url);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard indisponible */
+    }
+  };
+
+  const btn =
+    "magnetic inline-flex items-center gap-2 text-[12.5px] font-semibold px-3.5 py-2 rounded-full border border-ink/15 dark:border-snow/15 text-ink dark:text-snow hover:border-blue hover:text-blue transition-colors";
+
+  return (
+    <div className="flex flex-wrap items-center gap-2.5 mt-8">
+      <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-graphite/55 dark:text-snow/50 mr-1">
+        Partager
+      </span>
+      <a
+        className={btn}
+        href={`https://wa.me/?text=${text}%20${enc}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        <MessageCircle size={14} strokeWidth={2} /> WhatsApp
+      </a>
+      <a
+        className={btn}
+        href={`https://www.linkedin.com/sharing/share-offsite/?url=${enc}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        LinkedIn
+      </a>
+      <a
+        className={btn}
+        href={`https://twitter.com/intent/tweet?text=${text}&url=${enc}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        X
+      </a>
+      <button type="button" onClick={copy} className={btn}>
+        {copied ? (
+          <>
+            <Check size={14} strokeWidth={2.4} className="text-blue" /> Lien copié
+          </>
+        ) : (
+          <>
+            <Link2 size={14} strokeWidth={2} /> Copier le lien
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
 export default function BlogPost() {
   const { slug } = useParams();
-  const post = getPostBySlug(slug);
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = post
-      ? `${post.title} — Mouhamed Dione`
-      : "Article introuvable — Mouhamed Dione";
-  }, [post]);
+    let alive = true;
+    setLoading(true);
+    getPostBySlug(slug)
+      .then((p) => {
+        if (!alive) return;
+        setPost(p);
+        document.title = p
+          ? `${p.title} — Mouhamed Dione`
+          : "Article introuvable — Mouhamed Dione";
+      })
+      .catch((e) => console.error("Chargement de l'article:", e))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="noise relative min-h-screen bg-snow text-graphite dark:bg-ink dark:text-snow flex flex-col">
+        <BlogTopBar />
+        <div className="flex-1 flex items-center justify-center gap-3 text-graphite/60 dark:text-snow/50">
+          <Loader2 size={18} className="animate-spin text-blue" />
+          <span className="font-mono text-sm">Chargement…</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -63,6 +161,8 @@ export default function BlogPost() {
           {post.title}
         </h1>
 
+        <ShareBar title={post.title} />
+
         {post.cover && (
           <img
             src={post.cover}
@@ -78,8 +178,13 @@ export default function BlogPost() {
           dangerouslySetInnerHTML={{ __html: post.html }}
         />
 
+        {/* Partage en bas aussi */}
+        <div className="mt-10 pt-8 border-t border-ink/10 dark:border-snow/10">
+          <ShareBar title={post.title} />
+        </div>
+
         {/* CTA fin d'article */}
-        <div className="mt-14 p-7 sm:p-9 rounded-[1.6rem] bg-ink text-snow relative overflow-hidden">
+        <div className="mt-12 p-7 sm:p-9 rounded-[1.6rem] bg-ink text-snow relative overflow-hidden">
           <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-blue/25 blur-3xl" />
           <div className="relative">
             <p className="font-mono text-[10px] tracking-[0.28em] uppercase text-blue mb-3">

@@ -1,26 +1,11 @@
-import { marked } from "marked";
-
 /*
- * Blog loader.
- * ------------
- * Chaque article est un simple fichier Markdown dans src/content/blog/.
- * Pour PUBLIER un nouvel article : ajoute un fichier .md dans ce dossier.
- * Rien d'autre a toucher — ce fichier le detecte automatiquement au build.
+ * Source LOCALE des articles (fichiers Markdown).
+ * Utilisee :
+ *   1. comme repli tant que Firebase n'est pas configure,
+ *   2. comme articles de depart a importer dans Firebase (bouton dans /admin).
  *
- * Format d'un fichier (le bloc entre --- s'appelle le "frontmatter") :
- *
- *   ---
- *   title: "Le titre de mon article"
- *   date: 2026-06-21
- *   excerpt: "Une phrase d'accroche affichee dans la liste."
- *   tags: [Web, Carriere]
- *   cover: /blog/mon-image.jpg   (optionnel — image dans /public/blog/)
- *   ---
- *
- *   Ici tu ecris ton article en Markdown...
+ * Pour le fonctionnement Firebase, voir src/utils/posts.js.
  */
-
-marked.setOptions({ breaks: true, gfm: true });
 
 // Vite charge tous les .md du dossier en texte brut, au moment du build.
 const files = import.meta.glob("../content/blog/*.md", {
@@ -29,7 +14,7 @@ const files = import.meta.glob("../content/blog/*.md", {
   eager: true,
 });
 
-function parseFrontmatter(raw) {
+export function parseFrontmatter(raw) {
   const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
   if (!match) return { data: {}, body: raw };
 
@@ -40,7 +25,6 @@ function parseFrontmatter(raw) {
     const key = line.slice(0, sep).trim();
     let value = line.slice(sep + 1).trim();
 
-    // Liste : tags: [Web, Carriere]
     if (value.startsWith("[") && value.endsWith("]")) {
       data[key] = value
         .slice(1, -1)
@@ -55,12 +39,12 @@ function parseFrontmatter(raw) {
   return { data, body: match[2] };
 }
 
-function estimateReadingTime(text) {
-  const words = text.trim().split(/\s+/).length;
+export function estimateReadingTime(text) {
+  const words = (text || "").trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200)); // ~200 mots/min
 }
 
-function formatDate(iso) {
+export function formatDate(iso) {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
@@ -71,7 +55,7 @@ function formatDate(iso) {
   });
 }
 
-const posts = Object.entries(files)
+const localPosts = Object.entries(files)
   .map(([path, raw]) => {
     const slug = path.split("/").pop().replace(/\.md$/, "");
     const { data, body } = parseFrontmatter(raw);
@@ -79,22 +63,15 @@ const posts = Object.entries(files)
       slug,
       title: data.title || slug,
       date: data.date || "",
-      dateLabel: formatDate(data.date),
       excerpt: data.excerpt || "",
       tags: Array.isArray(data.tags) ? data.tags : [],
       cover: data.cover || "",
-      readingTime: data.readingTime
-        ? Number(data.readingTime)
-        : estimateReadingTime(body),
-      html: marked.parse(body),
+      content: body.trim(),
+      published: true,
     };
   })
-  .sort((a, b) => (a.date < b.date ? 1 : -1)); // plus recent en premier
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
 
-export function getAllPosts() {
-  return posts;
-}
-
-export function getPostBySlug(slug) {
-  return posts.find((p) => p.slug === slug) || null;
+export function getLocalPosts() {
+  return localPosts;
 }

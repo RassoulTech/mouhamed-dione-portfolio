@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Variables d'environnement (clés Firebase) — ne jamais committer (.env.example reste suivi)
+.env
+.env.local
+.env.*.local
+
 # Vercel
 .vercel
 

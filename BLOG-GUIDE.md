@@ -1,5 +1,11 @@
 # 📝 Guide du Blog — Mode d'emploi
 
+> ⭐ **Deux façons d'écrire :**
+> 1. **Depuis le site** (recommandé) → page `/admin`, après avoir branché Firebase.
+>    Voir **[FIREBASE-SETUP.md](FIREBASE-SETUP.md)**.
+> 2. **En fichiers Markdown** (ci-dessous) → méthode de secours qui marche
+>    toujours, même sans Firebase. C'est aussi la source des articles de départ.
+
 Ton portfolio a maintenant un blog intégré, dans le même design que le reste du site.
 
 - **Liste des articles** : `/blog`
