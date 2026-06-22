@@ -27,7 +27,11 @@ import {
   AlertCircle,
   MessageSquare,
   User,
+  Lock,
 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, isFirebaseConfigured } from "./lib/firebase";
 import { triggerCVDownload, prewarmCV } from "./utils/generateCV";
 import "./App.css";
 
@@ -2067,6 +2071,14 @@ function Contact() {
 /* -------------------- FOOTER -------------------- */
 export function Footer() {
   const year = new Date().getFullYear();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!isFirebaseConfigured) return;
+    // N'affiche le lien Admin que si TU es connecté (session Firebase).
+    return onAuthStateChanged(auth, (u) => setIsAdmin(Boolean(u)));
+  }, []);
+
   return (
     <footer className="relative bg-graphite text-snow rounded-t-[3rem] sm:rounded-t-[4rem] pt-12 sm:pt-16 pb-8 sm:pb-10 px-5 sm:px-6 -mt-8">
       <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-6 sm:gap-8 justify-between items-start md:items-center">
@@ -2112,6 +2124,15 @@ export function Footer() {
           >
             <Mail size={18} strokeWidth={1.7} />
           </a>
+          {isAdmin && (
+            <Link
+              to="/admin"
+              className="magnetic inline-flex items-center gap-1.5 bg-blue/15 text-blue border border-blue/30 rounded-full px-3 py-1.5 text-[11px] font-semibold hover:bg-blue/25 transition-colors"
+              aria-label="Espace administration"
+            >
+              <Lock size={12} strokeWidth={2.2} /> Admin
+            </Link>
+          )}
         </div>
       </div>
     </footer>
