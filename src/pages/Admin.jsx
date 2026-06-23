@@ -20,6 +20,10 @@ import {
   Loader2,
   DownloadCloud,
   ExternalLink,
+  Mail,
+  ArrowRight,
+  ArrowLeft,
+  AlertCircle,
 } from "lucide-react";
 import { auth, isFirebaseConfigured } from "../lib/firebase";
 import {
@@ -129,63 +133,125 @@ function LoginForm() {
     }
   };
 
+  const [showPw, setShowPw] = useState(false);
+
   const field =
-    "w-full bg-snow dark:bg-graphite/40 border border-ink/15 dark:border-snow/15 rounded-xl px-4 py-3 text-ink dark:text-snow outline-none focus:border-blue transition-colors";
+    "w-full bg-ink/[0.03] dark:bg-ink/40 border border-ink/12 dark:border-snow/12 rounded-xl pl-11 py-3.5 text-[15px] text-ink dark:text-snow placeholder:text-graphite/45 dark:placeholder:text-snow/35 outline-none focus:border-blue focus:ring-2 focus:ring-blue/15 transition";
+  const icon =
+    "absolute left-3.5 top-1/2 -translate-y-1/2 text-graphite/40 dark:text-snow/35";
 
   return (
-    <div className="max-w-sm mx-auto px-6 pt-40">
-      <div className="inline-flex w-12 h-12 rounded-2xl bg-blue/15 items-center justify-center mb-6">
-        <Lock size={20} className="text-blue" />
-      </div>
-      <h1 className="font-serif italic text-4xl text-ink dark:text-snow mb-2">
-        Espace rédaction
-      </h1>
-      <p className="text-graphite/70 dark:text-snow/55 text-sm mb-8">
-        Réservé à l'auteur du blog.
-      </p>
-      <form onSubmit={submit} className="space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className={field}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className={field}
-          required
-        />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={busy}
-          className="magnetic w-full inline-flex items-center justify-center gap-2 bg-blue text-snow font-semibold px-5 py-3 rounded-xl hover:bg-blue-deep transition-colors disabled:opacity-60"
-        >
-          {busy ? <Loader2 size={16} className="animate-spin" /> : <Lock size={15} />}
-          Se connecter
-        </button>
-      </form>
-
-      <div className="flex items-center gap-3 my-5">
-        <span className="h-px flex-1 bg-ink/10 dark:bg-snow/10" />
-        <span className="font-mono text-[10px] uppercase tracking-widest text-graphite/50 dark:text-snow/40">
-          ou
-        </span>
-        <span className="h-px flex-1 bg-ink/10 dark:bg-snow/10" />
+    <div className="relative min-h-screen flex items-center justify-center px-5 py-28 sm:py-32">
+      {/* Halo décoratif */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-[700px] h-[700px] max-w-[140vw] rounded-full bg-blue/15 dark:bg-blue/20 blur-[130px]" />
       </div>
 
-      <button
-        type="button"
-        onClick={loginWithGoogle}
-        className="magnetic w-full inline-flex items-center justify-center gap-3 bg-snow dark:bg-graphite/40 border border-ink/15 dark:border-snow/15 text-ink dark:text-snow font-semibold px-5 py-3 rounded-xl hover:border-blue transition-colors"
-      >
-        <GoogleG /> Continuer avec Google
-      </button>
+      <div className="relative w-full max-w-[430px]">
+        <div className="relative bg-snow/85 dark:bg-graphite/30 backdrop-blur-2xl border border-ink/10 dark:border-snow/10 rounded-[1.8rem] sm:rounded-[2.2rem] p-7 sm:p-10 shadow-[0_40px_90px_-30px_rgba(28,28,30,0.55)]">
+          {/* Badge de marque */}
+          <div className="flex justify-center">
+            <div className="relative w-16 h-16 rounded-[1.3rem] bg-blue flex items-center justify-center shadow-[0_18px_45px_-12px_rgba(46,91,255,0.75)]">
+              <Lock size={26} strokeWidth={2.2} className="text-snow" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-[3px] border-snow dark:border-graphite" />
+            </div>
+          </div>
+
+          <p className="text-center font-mono text-[10px] tracking-[0.34em] uppercase text-blue mt-6 mb-2">
+            Espace privé
+          </p>
+          <h1 className="text-center font-serif italic text-[clamp(2.1rem,7vw,2.7rem)] leading-[1.05] text-ink dark:text-snow">
+            Espace rédaction
+          </h1>
+          <p className="text-center text-graphite/65 dark:text-snow/55 text-[14px] mt-3 mb-7">
+            Connecte-toi pour gérer ton blog.
+          </p>
+
+          <form onSubmit={submit} className="space-y-3.5">
+            <div className="relative">
+              <Mail size={17} className={icon} />
+              <input
+                type="email"
+                placeholder="Ton email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`${field} pr-4`}
+                required
+              />
+            </div>
+            <div className="relative">
+              <Lock size={17} className={icon} />
+              <input
+                type={showPw ? "text" : "password"}
+                placeholder="Ton mot de passe"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`${field} pr-11`}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((s) => !s)}
+                aria-label={showPw ? "Masquer" : "Afficher"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-graphite/45 dark:text-snow/40 hover:text-blue transition-colors"
+              >
+                {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
+              </button>
+            </div>
+
+            {error && (
+              <div className="flex items-start gap-2 text-[13px] text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl px-3.5 py-2.5">
+                <AlertCircle size={15} className="mt-0.5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="magnetic group relative w-full inline-flex items-center justify-center bg-blue text-snow font-semibold text-[15px] px-5 py-3.5 rounded-xl overflow-hidden shadow-[0_15px_35px_-12px_rgba(46,91,255,0.7)] disabled:opacity-60"
+            >
+              <span className="absolute inset-0 bg-blue-deep translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-magnetic" />
+              <span className="relative flex items-center gap-2">
+                {busy && <Loader2 size={17} className="animate-spin" />}
+                Se connecter
+                {!busy && (
+                  <ArrowRight
+                    size={16}
+                    strokeWidth={2.5}
+                    className="group-hover:translate-x-0.5 transition-transform"
+                  />
+                )}
+              </span>
+            </button>
+          </form>
+
+          <div className="flex items-center gap-3 my-5">
+            <span className="h-px flex-1 bg-ink/10 dark:bg-snow/10" />
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-graphite/45 dark:text-snow/35">
+              ou
+            </span>
+            <span className="h-px flex-1 bg-ink/10 dark:bg-snow/10" />
+          </div>
+
+          <button
+            type="button"
+            onClick={loginWithGoogle}
+            className="magnetic w-full inline-flex items-center justify-center gap-3 bg-snow dark:bg-ink/50 border border-ink/12 dark:border-snow/15 text-ink dark:text-snow font-semibold text-[14.5px] px-5 py-3.5 rounded-xl hover:border-blue hover:shadow-[0_12px_30px_-15px_rgba(46,91,255,0.5)] transition-all"
+          >
+            <GoogleG size={18} /> Continuer avec Google
+          </button>
+        </div>
+
+        <div className="text-center mt-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 font-mono text-[11px] tracking-wider uppercase text-graphite/55 dark:text-snow/50 hover:text-blue transition-colors"
+          >
+            <ArrowLeft size={13} /> Retour au site
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
