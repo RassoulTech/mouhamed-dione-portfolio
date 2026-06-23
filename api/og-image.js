@@ -278,6 +278,9 @@ export default async function handler(req) {
     fonts: fonts.length ? fonts : undefined,
     headers: {
       "cache-control": "public, max-age=86400, s-maxage=86400, immutable",
+      // Diagnostic : indique d'où vient le fond (clé présente ? photo trouvée ?)
+      "x-og-haskey": process.env.UNSPLASH_ACCESS_KEY ? "yes" : "no",
+      "x-og-bg": photoUrl ? "photo" : "gradient",
     },
   });
 }
