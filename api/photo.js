@@ -37,6 +37,7 @@ function keywords(tag) {
 export default async function handler(req, res) {
   const slug = (req.query.slug || "blog").toString();
   const tag = (req.query.tag || "").toString();
+  const q = (req.query.q || "").toString().trim();
   const W = parseInt(req.query.w, 10) || 1200;
   const H = parseInt(req.query.h, 10) || 630;
 
@@ -48,7 +49,7 @@ export default async function handler(req, res) {
     try {
       const r = await fetch(
         `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
-          keywords(tag)
+          q || keywords(tag)
         )}&orientation=landscape&per_page=12&content_filter=high`,
         { headers: { Authorization: `Client-ID ${key}` } }
       );

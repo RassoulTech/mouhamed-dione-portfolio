@@ -41,6 +41,7 @@ const EMPTY = {
   excerpt: "",
   tags: "",
   cover: "",
+  photoQuery: "",
   content: "",
   date: new Date().toISOString().slice(0, 10),
   published: false,
@@ -279,6 +280,7 @@ function Editor({ initial, onDone, onCancel }) {
           title: form.title,
           excerpt: form.excerpt,
           cover: form.cover,
+          photoQuery: form.photoQuery,
           content: form.content,
           date: form.date,
           tags: form.tags
@@ -383,6 +385,20 @@ function Editor({ initial, onDone, onCancel }) {
               placeholder="/blog/mon-image.jpg"
             />
           </div>
+        </div>
+
+        <div>
+          <label className={label}>Mot-clé pour la photo (optionnel)</label>
+          <input
+            className={field}
+            value={form.photoQuery}
+            onChange={(e) => set("photoQuery", e.target.value)}
+            placeholder="ex. developer portfolio, bureau startup, étudiant code…"
+          />
+          <p className="mt-1.5 font-mono text-[10px] text-graphite/50 dark:text-snow/40">
+            La photo est cherchée sur Unsplash avec ce mot-clé. Vide = basé sur
+            la catégorie. (Une image de couverture remplie reste prioritaire.)
+          </p>
         </div>
 
         <div>

@@ -37,6 +37,7 @@ async function fetchPublishedArticle(slug) {
     excerpt: f.excerpt?.stringValue || "",
     cover: f.cover?.stringValue || "",
     tag: f.tags?.arrayValue?.values?.[0]?.stringValue || "",
+    photoQuery: f.photoQuery?.stringValue || "",
   };
 }
 
@@ -51,6 +52,7 @@ export default async function handler(req, res) {
     "Articles tech, présence digitale et solutions concrètes pour les étudiants et entrepreneurs.";
   let cover = "";
   let tag = "";
+  let photoQuery = "";
 
   try {
     const article = await fetchPublishedArticle(slug);
@@ -58,6 +60,7 @@ export default async function handler(req, res) {
       if (article.title) title = article.title;
       if (article.excerpt) description = article.excerpt;
       if (article.tag) tag = article.tag;
+      if (article.photoQuery) photoQuery = article.photoQuery;
       if (article.cover) {
         cover = article.cover.startsWith("http")
           ? article.cover
@@ -72,11 +75,12 @@ export default async function handler(req, res) {
   // C'est ce format paysage qui déclenche le GRAND aperçu sur WhatsApp
   // (comme une miniature YouTube), plutôt que la petite vignette latérale.
   // Vraie photo via /api/photo (Unsplash assorti au thème si clé, sinon Picsum).
+  const qParam = photoQuery ? `&q=${encodeURIComponent(photoQuery)}` : "";
   const ogImage =
     cover ||
     `${base}/api/photo?slug=${encodeURIComponent(
       slug
-    )}&tag=${encodeURIComponent(tag)}&pv=1`;
+    )}&tag=${encodeURIComponent(tag)}${qParam}&pv=1`;
   const twImage = ogImage;
   const dimsMeta = cover
     ? ""

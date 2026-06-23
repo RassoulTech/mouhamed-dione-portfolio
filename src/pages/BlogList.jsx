@@ -93,7 +93,11 @@ export default function BlogList() {
                       post.cover ||
                       `/api/photo?slug=${encodeURIComponent(
                         post.slug
-                      )}&tag=${encodeURIComponent(post.tags[0] || "")}&pv=1`
+                      )}&tag=${encodeURIComponent(post.tags[0] || "")}${
+                        post.photoQuery
+                          ? `&q=${encodeURIComponent(post.photoQuery)}`
+                          : ""
+                      }&pv=1`
                     }
                     alt={post.title}
                     loading="lazy"
