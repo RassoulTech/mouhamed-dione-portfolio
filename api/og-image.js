@@ -116,10 +116,15 @@ export default async function handler(req) {
     tag ||
     "technology workspace abstract";
 
-  const [fonts, photoUrl] = await Promise.all([
+  const [fonts, unsplashUrl] = await Promise.all([
     loadFonts(),
     fetchPhoto(query, square ? "squarish" : "landscape", hash(title), W, H),
   ]);
+  // Toujours une VRAIE photo : Unsplash (selon le thème) si la clé est là,
+  // sinon Lorem Picsum (sans clé), déterministe par article.
+  const photoUrl =
+    unsplashUrl || `https://picsum.photos/seed/${hash(title)}/${W}/${H}`;
+  const photoSource = unsplashUrl ? "unsplash" : "picsum";
   const ff = fonts.length ? "Jakarta" : "sans-serif";
   const badgeText = (tag || "Article").toUpperCase();
 
@@ -141,7 +146,7 @@ export default async function handler(req) {
           width: `${W}px`,
           height: `${H}px`,
           backgroundImage:
-            "linear-gradient(180deg, rgba(7,11,22,0.35) 0%, rgba(7,11,22,0.72) 52%, rgba(7,11,22,0.95) 100%)",
+            "linear-gradient(180deg, rgba(7,11,22,0.58) 0%, rgba(7,11,22,0.78) 50%, rgba(7,11,22,0.96) 100%)",
         }),
       ]
     : [
@@ -280,7 +285,7 @@ export default async function handler(req) {
       "cache-control": "public, max-age=86400, s-maxage=86400, immutable",
       // Diagnostic : indique d'où vient le fond (clé présente ? photo trouvée ?)
       "x-og-haskey": process.env.UNSPLASH_ACCESS_KEY ? "yes" : "no",
-      "x-og-bg": photoUrl ? "photo" : "gradient",
+      "x-og-bg": photoSource,
     },
   });
 }
