@@ -95,7 +95,7 @@ export default function BlogList() {
                         post.tags[0]
                           ? `&tag=${encodeURIComponent(post.tags[0])}`
                           : ""
-                      }&format=wide`
+                      }&format=wide&v=2`
                     }
                     alt={post.title}
                     loading="lazy"

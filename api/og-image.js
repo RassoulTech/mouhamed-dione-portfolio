@@ -1,13 +1,14 @@
 import { ImageResponse } from "@vercel/og";
 
-/* Vercel Edge function — miniature PREMIUM par article.
+/* Vercel Edge function — miniature PREMIUM par article (vraie photo + titre).
    GET /api/og-image?title=...&tag=...&format=wide|square
 
-   - Si UNSPLASH_ACCESS_KEY est défini : une VRAIE PHOTO choisie selon le thème
-     (catégorie/titre) sert de fond, avec un voile sombre + le titre par-dessus.
-   - Sinon (ou si Unsplash échoue) : repli sur un dégradé premium aux couleurs
-     du portfolio. Donc ça ne casse jamais.
-   - Typographie Plus Jakarta Sans chargée à la volée (repli gracieux). */
+   - Photo de fond : Unsplash (selon le thème) si UNSPLASH_ACCESS_KEY est défini,
+     sinon Lorem Picsum (sans clé). La photo est TÉLÉCHARGÉE côté serveur et
+     intégrée en data-URI (fiable, contrairement à une URL distante que le
+     moteur Satori n'arrive pas toujours à charger).
+   - Repli sur un dégradé premium si le téléchargement échoue (jamais vide).
+   - Typo Plus Jakarta Sans chargée à la volée (repli gracieux). */
 
 export const config = { runtime: "edge" };
 
@@ -28,7 +29,6 @@ const TAG_TO_PALETTE = {
   design: 3, ui: 3, créativité: 3, creativite: 3,
 };
 
-// Mots-clés de recherche photo selon la catégorie.
 const TAG_QUERY = {
   tech: "technology code computer",
   web: "web development programming",
@@ -72,7 +72,8 @@ async function loadFonts() {
   }
 }
 
-async function fetchPhoto(query, orientation, seed, W, H) {
+// URL Unsplash (selon le thème) si la clé est présente, sinon null.
+async function unsplashUrl(query, orientation, seed, W, H) {
   const key = process.env.UNSPLASH_ACCESS_KEY;
   if (!key) return null;
   try {
@@ -85,10 +86,29 @@ async function fetchPhoto(query, orientation, seed, W, H) {
     if (!r.ok) return null;
     const data = await r.json();
     const results = data.results || [];
-    if (!results.length) return null;
-    const raw = results[seed % results.length]?.urls?.raw;
-    if (!raw) return null;
-    return `${raw}&w=${W}&h=${H}&fit=crop&crop=entropy&q=80&fm=jpg`;
+    const raw = results[seed % (results.length || 1)]?.urls?.raw;
+    return raw ? `${raw}&w=${W}&h=${H}&fit=crop&crop=entropy&q=80&fm=jpg` : null;
+  } catch {
+    return null;
+  }
+}
+
+// Télécharge une image et la renvoie en data-URI (ou null si échec).
+async function toDataUri(url) {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 4500);
+    const r = await fetch(url, { signal: ctrl.signal, redirect: "follow" });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const ct = r.headers.get("content-type") || "image/jpeg";
+    if (!ct.startsWith("image/")) return null;
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    }
+    return `data:${ct};base64,${btoa(binary)}`;
   } catch {
     return null;
   }
@@ -105,6 +125,7 @@ export default async function handler(req) {
   const H = square ? 1080 : 630;
   const pad = square ? 92 : 78;
   const p = pickPalette(tag, title);
+  const seed = hash(title);
 
   const len = title.length;
   const titleSize = square
@@ -112,24 +133,23 @@ export default async function handler(req) {
     : len > 95 ? 54 : len > 60 ? 66 : 82;
 
   const query =
-    TAG_QUERY[(tag || "").toLowerCase().trim()] ||
-    tag ||
-    "technology workspace abstract";
+    TAG_QUERY[(tag || "").toLowerCase().trim()] || tag || "technology workspace";
 
-  const [fonts, unsplashUrl] = await Promise.all([
+  // 1) URL de la photo : Unsplash si clé, sinon Picsum (sans clé).
+  const [fonts, uUrl] = await Promise.all([
     loadFonts(),
-    fetchPhoto(query, square ? "squarish" : "landscape", hash(title), W, H),
+    unsplashUrl(query, square ? "squarish" : "landscape", seed, W, H),
   ]);
-  // Toujours une VRAIE photo : Unsplash (selon le thème) si la clé est là,
-  // sinon Lorem Picsum (sans clé), déterministe par article.
-  const photoUrl =
-    unsplashUrl || `https://picsum.photos/seed/${hash(title)}/${W}/${H}`;
-  const photoSource = unsplashUrl ? "unsplash" : "picsum";
+  const remoteUrl = uUrl || `https://picsum.photos/seed/${seed}/${W}/${H}`;
+  // 2) On télécharge la photo et on l'intègre directement.
+  const photoData = await toDataUri(remoteUrl);
+  const photoSource = photoData ? (uUrl ? "unsplash" : "picsum") : "gradient";
+
   const ff = fonts.length ? "Jakarta" : "sans-serif";
   const badgeText = (tag || "Article").toUpperCase();
 
-  // Couche de fond : photo + voile sombre, ou dégradé premium.
-  const background = photoUrl
+  // Fond : photo intégrée + voile sombre, ou dégradé premium si pas de photo.
+  const background = photoData
     ? [
         el("img", {
           position: "absolute",
@@ -138,7 +158,7 @@ export default async function handler(req) {
           width: `${W}px`,
           height: `${H}px`,
           objectFit: "cover",
-        }, undefined),
+        }),
         el("div", {
           position: "absolute",
           top: 0,
@@ -146,7 +166,7 @@ export default async function handler(req) {
           width: `${W}px`,
           height: `${H}px`,
           backgroundImage:
-            "linear-gradient(180deg, rgba(7,11,22,0.58) 0%, rgba(7,11,22,0.78) 50%, rgba(7,11,22,0.96) 100%)",
+            "linear-gradient(180deg, rgba(7,11,22,0.55) 0%, rgba(7,11,22,0.78) 50%, rgba(7,11,22,0.95) 100%)",
         }),
       ]
     : [
@@ -160,11 +180,9 @@ export default async function handler(req) {
           backgroundImage: `radial-gradient(circle, ${p.glow} 0%, rgba(0,0,0,0) 68%)`,
         }),
       ];
-
-  const fixImgSrc = photoUrl;
+  if (photoData) background[0].props.src = photoData;
 
   const content = [
-    // Haut : badge + marque
     el(
       "div",
       { display: "flex", alignItems: "center", justifyContent: "space-between" },
@@ -175,7 +193,7 @@ export default async function handler(req) {
             display: "flex",
             alignItems: "center",
             border: `2px solid ${p.accent}`,
-            backgroundColor: "rgba(0,0,0,0.25)",
+            backgroundColor: "rgba(0,0,0,0.3)",
             color: p.accent,
             fontSize: square ? "26px" : "23px",
             fontWeight: 800,
@@ -191,13 +209,12 @@ export default async function handler(req) {
             fontSize: square ? "24px" : "21px",
             fontWeight: 500,
             letterSpacing: "5px",
-            color: "rgba(255,255,255,0.7)",
+            color: "rgba(255,255,255,0.75)",
           },
           "MOUHAMED DIONE"
         ),
       ]
     ),
-    // Milieu : barre + titre
     el("div", { display: "flex", flexDirection: "column" }, [
       el("div", {
         width: square ? "120px" : "96px",
@@ -219,14 +236,13 @@ export default async function handler(req) {
         title
       ),
     ]),
-    // Bas
     el(
       "div",
       {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        borderTop: "1px solid rgba(255,255,255,0.2)",
+        borderTop: "1px solid rgba(255,255,255,0.22)",
         paddingTop: square ? "34px" : "26px",
       },
       [
@@ -246,15 +262,12 @@ export default async function handler(req) {
         ]),
         el(
           "div",
-          { fontSize: square ? "24px" : "21px", fontWeight: 500, color: "rgba(255,255,255,0.65)" },
+          { fontSize: square ? "24px" : "21px", fontWeight: 500, color: "rgba(255,255,255,0.7)" },
           "cv-mouhamed.vercel.app"
         ),
       ]
     ),
   ];
-
-  // Injecte le src de l'image de fond (Satori lit props.src sur le type "img").
-  if (fixImgSrc) background[0].props.src = fixImgSrc;
 
   const tree = el(
     "div",
@@ -267,7 +280,7 @@ export default async function handler(req) {
       justifyContent: "space-between",
       padding: `${pad}px`,
       backgroundColor: "#070B16",
-      backgroundImage: photoUrl
+      backgroundImage: photoData
         ? undefined
         : `linear-gradient(140deg, #070B16 0%, ${p.bg} 100%)`,
       color: "#FFFFFF",
@@ -283,7 +296,6 @@ export default async function handler(req) {
     fonts: fonts.length ? fonts : undefined,
     headers: {
       "cache-control": "public, max-age=86400, s-maxage=86400, immutable",
-      // Diagnostic : indique d'où vient le fond (clé présente ? photo trouvée ?)
       "x-og-haskey": process.env.UNSPLASH_ACCESS_KEY ? "yes" : "no",
       "x-og-bg": photoSource,
     },

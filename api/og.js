@@ -74,7 +74,7 @@ export default async function handler(req, res) {
   const enc = encodeURIComponent(title);
   const tagParam = tag ? `&tag=${encodeURIComponent(tag)}` : "";
   const ogImage =
-    cover || `${base}/api/og-image?title=${enc}${tagParam}&format=wide`;
+    cover || `${base}/api/og-image?title=${enc}${tagParam}&format=wide&v=2`;
   const twImage = ogImage;
   const dimsMeta = cover
     ? ""
