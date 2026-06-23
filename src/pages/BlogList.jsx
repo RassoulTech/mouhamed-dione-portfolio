@@ -91,7 +91,9 @@ export default function BlogList() {
                   <img
                     src={
                       post.cover ||
-                      `https://picsum.photos/seed/${post.slug}/1200/630`
+                      `/api/photo?slug=${encodeURIComponent(
+                        post.slug
+                      )}&tag=${encodeURIComponent(post.tags[0] || "")}&pv=1`
                     }
                     alt={post.title}
                     loading="lazy"
