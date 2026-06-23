@@ -8,6 +8,7 @@ import { BlogTopBar } from "./BlogChrome.jsx";
 export default function BlogList() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("Tous");
 
   useEffect(() => {
     document.title = "Le Journal — Mouhamed Dione";
@@ -21,6 +22,10 @@ export default function BlogList() {
       alive = false;
     };
   }, []);
+
+  const categories = ["Tous", ...new Set(posts.flatMap((p) => p.tags))];
+  const shown =
+    filter === "Tous" ? posts : posts.filter((p) => p.tags.includes(filter));
 
   return (
     <div className="noise relative min-h-screen bg-snow text-graphite dark:bg-ink dark:text-snow transition-colors duration-500">
@@ -56,8 +61,27 @@ export default function BlogList() {
             Aucun article pour l'instant. Le premier arrive très vite.
           </p>
         ) : (
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            {posts.map((post) => (
+          <>
+            {categories.length > 1 && (
+              <div className="flex flex-wrap gap-2.5 mb-10">
+                {categories.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setFilter(c)}
+                    className={`magnetic font-mono text-[10.5px] sm:text-[11px] tracking-wider uppercase px-4 py-2 rounded-full border transition-colors ${
+                      filter === c
+                        ? "bg-blue text-snow border-blue"
+                        : "border-ink/15 dark:border-snow/15 text-graphite/70 dark:text-snow/60 hover:border-blue hover:text-blue"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            )}
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+              {shown.map((post) => (
               <li key={post.slug}>
                 <Link
                   to={`/blog/${post.slug}`}
@@ -117,8 +141,9 @@ export default function BlogList() {
                   </div>
                 </Link>
               </li>
-            ))}
-          </ul>
+              ))}
+            </ul>
+          </>
         )}
       </main>
 
