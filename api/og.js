@@ -71,10 +71,9 @@ export default async function handler(req, res) {
   // UNE bannière large (paysage 1200×630) pour TOUTES les plateformes.
   // C'est ce format paysage qui déclenche le GRAND aperçu sur WhatsApp
   // (comme une miniature YouTube), plutôt que la petite vignette latérale.
-  const enc = encodeURIComponent(title);
-  const tagParam = tag ? `&tag=${encodeURIComponent(tag)}` : "";
+  // Vraie photo directement (Lorem Picsum, déterministe par article).
   const ogImage =
-    cover || `${base}/api/og-image?title=${enc}${tagParam}&format=wide&v=2`;
+    cover || `https://picsum.photos/seed/${encodeURIComponent(slug)}/1200/630`;
   const twImage = ogImage;
   const dimsMeta = cover
     ? ""
