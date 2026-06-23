@@ -180,7 +180,11 @@ export default async function handler(req) {
           backgroundImage: `radial-gradient(circle, ${p.glow} 0%, rgba(0,0,0,0) 68%)`,
         }),
       ];
-  if (photoData) background[0].props.src = photoData;
+  if (photoData) {
+    background[0].props.src = photoData;
+    background[0].props.width = W; // dimensions explicites requises par Satori
+    background[0].props.height = H;
+  }
 
   const content = [
     el(
