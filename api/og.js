@@ -65,23 +65,17 @@ export default async function handler(req, res) {
     /* on garde les valeurs par défaut */
   }
 
-  // Format d'image adapté à la plateforme qui demande l'aperçu :
-  //  - WhatsApp aime les vignettes carrées -> bannière carrée 1080×1080
-  //  - LinkedIn / X / Facebook / Telegram   -> bannière large 1200×630
-  const ua = (req.headers["user-agent"] || "").toLowerCase();
-  const isWhatsApp = ua.includes("whatsapp");
-  const fmt = isWhatsApp ? "square" : "wide";
-  const dims = isWhatsApp ? { w: 1080, h: 1080 } : { w: 1200, h: 630 };
-
+  // UNE bannière large (paysage 1200×630) pour TOUTES les plateformes.
+  // C'est ce format paysage qui déclenche le GRAND aperçu sur WhatsApp
+  // (comme une miniature YouTube), plutôt que la petite vignette latérale.
   const enc = encodeURIComponent(title);
-  // og:image suit la plateforme ; twitter:image reste toujours large.
-  const ogImage = cover || `${base}/api/og-image?title=${enc}&format=${fmt}`;
-  const twImage = cover || `${base}/api/og-image?title=${enc}&format=wide`;
+  const ogImage = cover || `${base}/api/og-image?title=${enc}&format=wide`;
+  const twImage = ogImage;
   const dimsMeta = cover
     ? ""
     : `
-    <meta property="og:image:width" content="${dims.w}" />
-    <meta property="og:image:height" content="${dims.h}" />`;
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />`;
 
   // On récupère le HTML de l'app pour que les vrais visiteurs aient bien le site.
   let html;
@@ -114,8 +108,9 @@ export default async function handler(req, res) {
   html = html.replace(/<\/head>/i, `${tags}</head>`);
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  // Pas de cache partagé : la réponse dépend de l'User-Agent (format par plateforme).
-  res.setHeader("Cache-Control", "no-store, must-revalidate");
-  res.setHeader("Vary", "User-Agent");
+  res.setHeader(
+    "Cache-Control",
+    "public, s-maxage=600, stale-while-revalidate=86400"
+  );
   return res.status(200).send(html);
 }
