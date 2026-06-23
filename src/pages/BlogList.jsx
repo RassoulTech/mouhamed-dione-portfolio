@@ -67,9 +67,11 @@ export default function BlogList() {
                   <img
                     src={
                       post.cover ||
-                      `/api/og-image?title=${encodeURIComponent(
-                        post.title
-                      )}&format=wide`
+                      `/api/og-image?title=${encodeURIComponent(post.title)}${
+                        post.tags[0]
+                          ? `&tag=${encodeURIComponent(post.tags[0])}`
+                          : ""
+                      }&format=wide`
                     }
                     alt={post.title}
                     loading="lazy"

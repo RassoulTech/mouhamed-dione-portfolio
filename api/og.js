@@ -36,6 +36,7 @@ async function fetchPublishedArticle(slug) {
     title: f.title?.stringValue || "",
     excerpt: f.excerpt?.stringValue || "",
     cover: f.cover?.stringValue || "",
+    tag: f.tags?.arrayValue?.values?.[0]?.stringValue || "",
   };
 }
 
@@ -49,12 +50,14 @@ export default async function handler(req, res) {
   let description =
     "Articles tech, présence digitale et solutions concrètes pour les étudiants et entrepreneurs.";
   let cover = "";
+  let tag = "";
 
   try {
     const article = await fetchPublishedArticle(slug);
     if (article) {
       if (article.title) title = article.title;
       if (article.excerpt) description = article.excerpt;
+      if (article.tag) tag = article.tag;
       if (article.cover) {
         cover = article.cover.startsWith("http")
           ? article.cover
@@ -69,7 +72,9 @@ export default async function handler(req, res) {
   // C'est ce format paysage qui déclenche le GRAND aperçu sur WhatsApp
   // (comme une miniature YouTube), plutôt que la petite vignette latérale.
   const enc = encodeURIComponent(title);
-  const ogImage = cover || `${base}/api/og-image?title=${enc}&format=wide`;
+  const tagParam = tag ? `&tag=${encodeURIComponent(tag)}` : "";
+  const ogImage =
+    cover || `${base}/api/og-image?title=${enc}${tagParam}&format=wide`;
   const twImage = ogImage;
   const dimsMeta = cover
     ? ""
