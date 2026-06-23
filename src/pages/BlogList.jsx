@@ -61,39 +61,57 @@ export default function BlogList() {
               <li key={post.slug}>
                 <Link
                   to={`/blog/${post.slug}`}
-                  className="card-hover group flex flex-col h-full bg-snow dark:bg-graphite/40 border border-ink/10 dark:border-snow/10 rounded-[1.6rem] sm:rounded-[2rem] p-6 sm:p-8 shadow-[0_15px_45px_-25px_rgba(28,28,30,0.25)]"
+                  className="card-hover group flex flex-col h-full bg-snow dark:bg-graphite/40 border border-ink/10 dark:border-snow/10 rounded-[1.6rem] sm:rounded-[2rem] overflow-hidden shadow-[0_15px_45px_-25px_rgba(28,28,30,0.25)]"
                 >
-                  <div className="flex items-center gap-3 mb-5">
-                    {post.tags[0] && (
-                      <span className="font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase text-blue border border-blue/30 rounded-full px-2.5 py-1">
-                        {post.tags[0]}
+                  {/* Miniature : couverture de l'article, sinon la bannière générée */}
+                  <img
+                    src={
+                      post.cover ||
+                      `/api/og-image?title=${encodeURIComponent(
+                        post.title
+                      )}&format=wide`
+                    }
+                    alt={post.title}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                    className="w-full aspect-[1200/630] object-cover bg-ink"
+                  />
+
+                  <div className="flex flex-col flex-1 p-6 sm:p-8">
+                    <div className="flex items-center gap-3 mb-5">
+                      {post.tags[0] && (
+                        <span className="font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase text-blue border border-blue/30 rounded-full px-2.5 py-1">
+                          {post.tags[0]}
+                        </span>
+                      )}
+                      <span className="font-mono text-[10px] tracking-wider uppercase text-graphite/55 dark:text-snow/50 flex items-center gap-1.5">
+                        <Clock size={11} strokeWidth={2} /> {post.readingTime} min
                       </span>
-                    )}
-                    <span className="font-mono text-[10px] tracking-wider uppercase text-graphite/55 dark:text-snow/50 flex items-center gap-1.5">
-                      <Clock size={11} strokeWidth={2} /> {post.readingTime} min
-                    </span>
-                  </div>
+                    </div>
 
-                  <h2 className="font-serif italic text-[clamp(1.5rem,3vw,2.1rem)] leading-[1.08] text-ink dark:text-snow group-hover:text-blue transition-colors">
-                    {post.title}
-                  </h2>
+                    <h2 className="font-serif italic text-[clamp(1.5rem,3vw,2.1rem)] leading-[1.08] text-ink dark:text-snow group-hover:text-blue transition-colors">
+                      {post.title}
+                    </h2>
 
-                  <p className="mt-4 text-[14px] sm:text-[15px] leading-[1.65] text-graphite dark:text-snow/70 flex-1">
-                    {post.excerpt}
-                  </p>
+                    <p className="mt-4 text-[14px] sm:text-[15px] leading-[1.65] text-graphite dark:text-snow/70 flex-1">
+                      {post.excerpt}
+                    </p>
 
-                  <div className="mt-6 pt-5 border-t border-ink/10 dark:border-snow/10 flex items-center justify-between">
-                    <span className="font-mono text-[10px] sm:text-[11px] tracking-widest uppercase text-graphite/55 dark:text-snow/50">
-                      {post.dateLabel}
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 text-blue font-semibold text-[13px]">
-                      Lire
-                      <ArrowUpRight
-                        size={15}
-                        strokeWidth={2.4}
-                        className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                      />
-                    </span>
+                    <div className="mt-6 pt-5 border-t border-ink/10 dark:border-snow/10 flex items-center justify-between">
+                      <span className="font-mono text-[10px] sm:text-[11px] tracking-widest uppercase text-graphite/55 dark:text-snow/50">
+                        {post.dateLabel}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-blue font-semibold text-[13px]">
+                        Lire
+                        <ArrowUpRight
+                          size={15}
+                          strokeWidth={2.4}
+                          className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
+                        />
+                      </span>
+                    </div>
                   </div>
                 </Link>
               </li>
