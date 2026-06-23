@@ -50,7 +50,7 @@ export default function BlogList() {
       </header>
 
       {/* Liste des articles */}
-      <main className="max-w-5xl mx-auto px-5 sm:px-6 py-14 sm:py-20 min-h-[40vh]">
+      <main className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20 min-h-[40vh]">
         {loading ? (
           <div className="flex items-center justify-center gap-3 py-20 text-graphite/60 dark:text-snow/50">
             <Loader2 size={18} className="animate-spin text-blue" />
@@ -80,12 +80,12 @@ export default function BlogList() {
                 ))}
               </div>
             )}
-            <ul className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
               {shown.map((post) => (
               <li key={post.slug}>
                 <Link
                   to={`/blog/${post.slug}`}
-                  className="card-hover group flex flex-col h-full bg-snow dark:bg-graphite/40 border border-ink/10 dark:border-snow/10 rounded-[1.6rem] sm:rounded-[2rem] overflow-hidden shadow-[0_15px_45px_-25px_rgba(28,28,30,0.25)]"
+                  className="card-hover group flex flex-col h-full bg-snow dark:bg-graphite/40 border border-ink/10 dark:border-snow/10 rounded-2xl overflow-hidden shadow-[0_15px_40px_-25px_rgba(28,28,30,0.25)]"
                 >
                   {/* Miniature : couverture de l'article, sinon la bannière générée */}
                   <img
@@ -107,34 +107,34 @@ export default function BlogList() {
                     className="w-full aspect-[1200/630] object-cover bg-ink"
                   />
 
-                  <div className="flex flex-col flex-1 p-6 sm:p-8">
-                    <div className="flex items-center gap-3 mb-5">
+                  <div className="flex flex-col flex-1 p-5">
+                    <div className="flex items-center gap-2.5 mb-3">
                       {post.tags[0] && (
-                        <span className="font-mono text-[9.5px] sm:text-[10.5px] tracking-wider uppercase text-blue border border-blue/30 rounded-full px-2.5 py-1">
+                        <span className="font-mono text-[9px] tracking-wider uppercase text-blue border border-blue/30 rounded-full px-2 py-0.5">
                           {post.tags[0]}
                         </span>
                       )}
-                      <span className="font-mono text-[10px] tracking-wider uppercase text-graphite/55 dark:text-snow/50 flex items-center gap-1.5">
-                        <Clock size={11} strokeWidth={2} /> {post.readingTime} min
+                      <span className="font-mono text-[9.5px] tracking-wider uppercase text-graphite/55 dark:text-snow/50 flex items-center gap-1">
+                        <Clock size={10} strokeWidth={2} /> {post.readingTime} min
                       </span>
                     </div>
 
-                    <h2 className="font-serif italic text-[clamp(1.5rem,3vw,2.1rem)] leading-[1.08] text-ink dark:text-snow group-hover:text-blue transition-colors">
+                    <h2 className="font-serif italic text-[1.15rem] leading-[1.2] text-ink dark:text-snow group-hover:text-blue transition-colors line-clamp-3">
                       {post.title}
                     </h2>
 
-                    <p className="mt-4 text-[14px] sm:text-[15px] leading-[1.65] text-graphite dark:text-snow/70 flex-1">
+                    <p className="mt-2 text-[12.5px] leading-[1.55] text-graphite/90 dark:text-snow/65 flex-1 line-clamp-2">
                       {post.excerpt}
                     </p>
 
-                    <div className="mt-6 pt-5 border-t border-ink/10 dark:border-snow/10 flex items-center justify-between">
-                      <span className="font-mono text-[10px] sm:text-[11px] tracking-widest uppercase text-graphite/55 dark:text-snow/50">
+                    <div className="mt-4 pt-3.5 border-t border-ink/10 dark:border-snow/10 flex items-center justify-between">
+                      <span className="font-mono text-[9.5px] tracking-widest uppercase text-graphite/55 dark:text-snow/50">
                         {post.dateLabel}
                       </span>
-                      <span className="inline-flex items-center gap-1.5 text-blue font-semibold text-[13px]">
+                      <span className="inline-flex items-center gap-1 text-blue font-semibold text-[12px]">
                         Lire
                         <ArrowUpRight
-                          size={15}
+                          size={14}
                           strokeWidth={2.4}
                           className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
                         />
