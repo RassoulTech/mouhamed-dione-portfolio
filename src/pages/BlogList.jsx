@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Clock, PenTool, Loader2 } from "lucide-react";
+import {
+  ArrowUpRight,
+  Clock,
+  PenTool,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+  ArrowDownUp,
+} from "lucide-react";
 import { getAllPosts } from "../utils/posts";
 import { Footer } from "../App.jsx";
 import { BlogTopBar } from "./BlogChrome.jsx";
@@ -9,6 +17,9 @@ export default function BlogList() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("Tous");
+  const [sort, setSort] = useState("recent");
+  const [page, setPage] = useState(1);
+  const PER_PAGE = 12;
 
   useEffect(() => {
     document.title = "Le Journal — Mouhamed Dione";
@@ -23,9 +34,27 @@ export default function BlogList() {
     };
   }, []);
 
+  // Reviens en page 1 quand on change de filtre ou de tri.
+  useEffect(() => {
+    setPage(1);
+  }, [filter, sort]);
+
   const categories = ["Tous", ...new Set(posts.flatMap((p) => p.tags))];
-  const shown =
+
+  const filtered =
     filter === "Tous" ? posts : posts.filter((p) => p.tags.includes(filter));
+  const sorted = [...filtered].sort((a, b) => {
+    if (sort === "old") return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+    if (sort === "az") return a.title.localeCompare(b.title, "fr");
+    return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; // récents par défaut
+  });
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PER_PAGE));
+  const shown = sorted.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  const goTo = (n) => {
+    setPage(Math.min(totalPages, Math.max(1, n)));
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="noise relative min-h-screen bg-snow text-graphite dark:bg-ink dark:text-snow transition-colors duration-500">
@@ -62,24 +91,45 @@ export default function BlogList() {
           </p>
         ) : (
           <>
-            {categories.length > 1 && (
-              <div className="flex flex-wrap gap-2.5 mb-10">
-                {categories.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setFilter(c)}
-                    className={`magnetic font-mono text-[10.5px] sm:text-[11px] tracking-wider uppercase px-4 py-2 rounded-full border transition-colors ${
-                      filter === c
-                        ? "bg-blue text-snow border-blue"
-                        : "border-ink/15 dark:border-snow/15 text-graphite/70 dark:text-snow/60 hover:border-blue hover:text-blue"
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+              {categories.length > 1 ? (
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setFilter(c)}
+                      className={`magnetic font-mono text-[10.5px] sm:text-[11px] tracking-wider uppercase px-4 py-2 rounded-full border transition-colors ${
+                        filter === c
+                          ? "bg-blue text-snow border-blue"
+                          : "border-ink/15 dark:border-snow/15 text-graphite/70 dark:text-snow/60 hover:border-blue hover:text-blue"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <span />
+              )}
+
+              <div className="flex items-center gap-2 shrink-0">
+                <ArrowDownUp
+                  size={14}
+                  className="text-graphite/50 dark:text-snow/40"
+                />
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  aria-label="Trier les articles"
+                  className="font-mono text-[10.5px] uppercase tracking-wider bg-snow dark:bg-graphite/40 border border-ink/15 dark:border-snow/15 rounded-full px-3.5 py-2 text-graphite/80 dark:text-snow/70 outline-none focus:border-blue cursor-pointer"
+                >
+                  <option value="recent">Plus récents</option>
+                  <option value="old">Plus anciens</option>
+                  <option value="az">Titre A-Z</option>
+                </select>
               </div>
-            )}
+            </div>
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
               {shown.map((post) => (
               <li key={post.slug}>
@@ -145,6 +195,43 @@ export default function BlogList() {
               </li>
               ))}
             </ul>
+
+            {totalPages > 1 && (
+              <nav className="flex items-center justify-center gap-1.5 mt-12">
+                <button
+                  type="button"
+                  onClick={() => goTo(page - 1)}
+                  disabled={page === 1}
+                  aria-label="Page précédente"
+                  className="w-9 h-9 rounded-full flex items-center justify-center border border-ink/15 dark:border-snow/15 text-graphite/70 dark:text-snow/60 hover:border-blue hover:text-blue transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => goTo(n)}
+                    className={`w-9 h-9 rounded-full flex items-center justify-center font-mono text-[12px] transition-colors ${
+                      n === page
+                        ? "bg-blue text-snow"
+                        : "border border-ink/15 dark:border-snow/15 text-graphite/70 dark:text-snow/60 hover:border-blue hover:text-blue"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => goTo(page + 1)}
+                  disabled={page === totalPages}
+                  aria-label="Page suivante"
+                  className="w-9 h-9 rounded-full flex items-center justify-center border border-ink/15 dark:border-snow/15 text-graphite/70 dark:text-snow/60 hover:border-blue hover:text-blue transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </nav>
+            )}
           </>
         )}
       </main>
