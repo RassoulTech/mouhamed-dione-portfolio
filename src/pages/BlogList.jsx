@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -7,11 +7,74 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   ArrowDownUp,
+  Check,
 } from "lucide-react";
 import { getAllPosts } from "../utils/posts";
 import { Footer } from "../App.jsx";
 import { BlogTopBar } from "./BlogChrome.jsx";
+
+/* Menu de tri custom (le <select> natif n'est pas stylable proprement). */
+const SORT_OPTIONS = [
+  { v: "recent", label: "Plus récents" },
+  { v: "old", label: "Plus anciens" },
+  { v: "az", label: "Titre A-Z" },
+];
+
+function SortSelect({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = SORT_OPTIONS.find((o) => o.v === value) || SORT_OPTIONS[0];
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="magnetic flex items-center gap-2.5 font-mono text-[10.5px] uppercase tracking-wider bg-snow dark:bg-graphite/40 border border-ink/15 dark:border-snow/15 rounded-full pl-4 pr-3 py-2.5 text-graphite/80 dark:text-snow/70 hover:border-blue transition-colors"
+      >
+        <ArrowDownUp size={13} className="text-blue" />
+        <span>{current.label}</span>
+        <ChevronDown
+          size={14}
+          className={`transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-48 z-30 bg-snow dark:bg-graphite border border-ink/10 dark:border-snow/10 rounded-2xl shadow-[0_25px_60px_-20px_rgba(28,28,30,0.45)] p-1.5">
+          {SORT_OPTIONS.map((o) => (
+            <button
+              key={o.v}
+              type="button"
+              onClick={() => {
+                onChange(o.v);
+                setOpen(false);
+              }}
+              className={`w-full flex items-center justify-between font-mono text-[10.5px] uppercase tracking-wider px-3.5 py-2.5 rounded-xl transition-colors ${
+                value === o.v
+                  ? "bg-blue/10 text-blue"
+                  : "text-graphite/70 dark:text-snow/60 hover:bg-ink/[0.05] dark:hover:bg-snow/10"
+              }`}
+            >
+              {o.label}
+              {value === o.v && <Check size={13} strokeWidth={2.5} />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function BlogList() {
   const [posts, setPosts] = useState([]);
@@ -113,22 +176,7 @@ export default function BlogList() {
                 <span />
               )}
 
-              <div className="flex items-center gap-2 shrink-0">
-                <ArrowDownUp
-                  size={14}
-                  className="text-graphite/50 dark:text-snow/40"
-                />
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                  aria-label="Trier les articles"
-                  className="font-mono text-[10.5px] uppercase tracking-wider bg-snow dark:bg-graphite/40 border border-ink/15 dark:border-snow/15 rounded-full px-3.5 py-2 text-graphite/80 dark:text-snow/70 outline-none focus:border-blue cursor-pointer"
-                >
-                  <option value="recent">Plus récents</option>
-                  <option value="old">Plus anciens</option>
-                  <option value="az">Titre A-Z</option>
-                </select>
-              </div>
+              <SortSelect value={sort} onChange={setSort} />
             </div>
             <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
               {shown.map((post) => (

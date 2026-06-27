@@ -66,8 +66,9 @@ const localPosts = Object.entries(files)
       excerpt: data.excerpt || "",
       tags: Array.isArray(data.tags) ? data.tags : [],
       cover: data.cover || "",
+      photoQuery: data.photoQuery || "",
       content: body.trim(),
-      published: true,
+      published: String(data.published).toLowerCase() !== "false",
     };
   })
   .sort((a, b) => (a.date < b.date ? 1 : -1));

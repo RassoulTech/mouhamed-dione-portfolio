@@ -38,7 +38,9 @@ function sortByDateDesc(list) {
 
 export async function getAllPosts() {
   if (!isFirebaseConfigured) {
-    return getLocalPosts().map(decorate);
+    return getLocalPosts()
+      .filter((p) => p.published)
+      .map(decorate);
   }
   // On demande EXPLICITEMENT les publiés, pour que la requête respecte
   // la règle Firestore (sinon le public se voit tout refuser).
@@ -85,6 +87,7 @@ export async function adminSavePost(slug, data, { isNew } = {}) {
       excerpt: data.excerpt || "",
       tags: data.tags || [],
       cover: data.cover || "",
+      photoQuery: data.photoQuery || "",
       content: data.content || "",
       date: data.date || new Date().toISOString().slice(0, 10),
       published: Boolean(data.published),
@@ -106,7 +109,7 @@ export async function adminSeedFromLocal() {
   for (const p of locals) {
     const existing = await getDoc(doc(db, "posts", p.slug));
     if (existing.exists()) continue;
-    await adminSavePost(p.slug, { ...p, published: true }, { isNew: true });
+    await adminSavePost(p.slug, { ...p }, { isNew: true });
     count += 1;
   }
   return count;

@@ -469,7 +469,11 @@ function Dashboard({ user }) {
     setSeeding(true);
     try {
       const n = await adminSeedFromLocal();
-      alert(n > 0 ? `${n} article(s) importé(s).` : "Déjà importés.");
+      alert(
+        n > 0
+          ? `${n} article(s) importé(s) en brouillon. Publie-les quand tu veux depuis cette page.`
+          : "Tous les articles sont déjà importés."
+      );
       refresh();
     } finally {
       setSeeding(false);
@@ -528,7 +532,7 @@ function Dashboard({ user }) {
           ) : (
             <DownloadCloud size={15} />
           )}
-          Importer les articles de départ
+          Importer tous les articles (brouillons)
         </button>
       </div>
 
