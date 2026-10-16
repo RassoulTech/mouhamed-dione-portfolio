@@ -241,6 +241,7 @@ const FORMATION = [
 
 const NAV_LINKS = [
   { id: "about", label: "A propos" },
+  { id: "services", label: "Services" },
   { id: "experience", label: "Experience" },
   { id: "skills", label: "Competences" },
   { id: "formation", label: "Formation" },
