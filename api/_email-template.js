@@ -28,11 +28,12 @@ function fmtDate(d = new Date()) {
   }
 }
 
-export function buildHtmlEmail({ name, email, subject, message, source }) {
+export function buildHtmlEmail({ name, email, subject, type, message, source }) {
   const safe = {
     name: escapeHtml(name),
     email: escapeHtml(email),
     subject: escapeHtml(subject || "Nouveau message"),
+    type: escapeHtml(type || "Non precise"),
     source: escapeHtml(source || "cv-mouhamed.vercel.app"),
     date: fmtDate(),
     body: messageHtml(message),
@@ -134,6 +135,14 @@ export function buildHtmlEmail({ name, email, subject, message, source }) {
                   ${safe.subject}
                 </p>
 
+                <!-- Type -->
+                <p style="margin:22px 0 8px 0;font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:#7d818c;font-family:'SFMono-Regular',Consolas,monospace;">
+                  Type de besoin
+                </p>
+                <p style="margin:0;font-size:15px;font-weight:600;color:#2E5BFF;line-height:1.4;">
+                  ${safe.type}
+                </p>
+
                 <!-- Message -->
                 <p style="margin:26px 0 10px 0;font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:#7d818c;font-family:'SFMono-Regular',Consolas,monospace;">
                   Message
@@ -196,13 +205,14 @@ export function buildHtmlEmail({ name, email, subject, message, source }) {
 </html>`;
 }
 
-export function buildPlainTextEmail({ name, email, subject, message, source }) {
+export function buildPlainTextEmail({ name, email, subject, type, message, source }) {
   return [
     "Portfolio Mouhamed Dione — Nouveau message",
     "============================================",
     "",
     `Expediteur : ${name} <${email}>`,
     `Sujet      : ${subject || "Nouveau message"}`,
+    `Type       : ${type || "Non precise"}`,
     `Recu le    : ${fmtDate()}`,
     `Source     : ${source || "cv-mouhamed.vercel.app"}`,
     "",

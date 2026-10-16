@@ -3,7 +3,7 @@ import { buildHtmlEmail, buildPlainTextEmail } from "./_email-template.js";
 
 /* Vercel serverless function — Node.js runtime.
    POST /api/contact
-     body: { name, email, subject?, message, _honey? }
+     body: { name, email, subject?, type?, message, _honey? }
      200 -> { ok: true }
      400 -> { ok: false, error }
      500 -> { ok: false, error }
@@ -60,6 +60,7 @@ export default async function handler(req, res) {
   const name = String(payload.name || "").trim();
   const email = String(payload.email || "").trim();
   const subject = String(payload.subject || "").trim();
+  const type = String(payload.type || "Non precise").trim().slice(0, 80);
   const message = String(payload.message || "").trim();
   const honey = String(payload._honey || "");
 
@@ -82,8 +83,8 @@ export default async function handler(req, res) {
     (req.headers["x-forwarded-host"] || req.headers.host || "").toString() ||
     "cv-mouhamed.vercel.app";
 
-  const html = buildHtmlEmail({ name, email, subject, message, source });
-  const text = buildPlainTextEmail({ name, email, subject, message, source });
+  const html = buildHtmlEmail({ name, email, subject, type, message, source });
+  const text = buildPlainTextEmail({ name, email, subject, type, message, source });
 
   const gmailUser = process.env.GMAIL_USER;
   const to = process.env.CONTACT_TO_EMAIL || gmailUser;

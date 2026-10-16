@@ -114,13 +114,13 @@ function Github({ size = 18, strokeWidth = 1.7, className = "" }) {
 export const PROFILE = {
   name: "Mouhamed Dione",
   initials: "MD",
-  title: "Developpeur Web · Communication Digitale",
+  title: "Sites web modernes · Presence digitale utile",
   city: "Thies, Senegal",
   coords: "14.7886° N · 16.9246° W",
   yearsXp: "2+",
   projects: "5",
   about:
-    "Developpeur web junior et gestionnaire de communication digitale, je combine la maitrise technique du developpement full-stack (PHP, Vue.js 3, JavaScript) avec une expertise en strategie de contenu et gestion des reseaux sociaux. Rigoureux, creatif et oriente resultats, je concois des solutions numeriques performantes tout en assurant une presence digitale coherente et impactante.",
+    "Je cree des sites web modernes et j’aide les petites entreprises a structurer leur presence digitale. Je relie developpement, contenu et deploiement pour transformer une idee en outil utile et visible.",
   email: "dionemhd1@gmail.com",
   phone: "+221 77 383 13 64",
   linkedin: "https://www.linkedin.com/in/mouhamed-dione-60428a335",
@@ -140,6 +140,7 @@ const EXPERIENCES = [
     company: "Projet personnel · Next.js · Vercel",
     description:
       "Conception et developpement d'une application web de gestion (billing & quotas) avec Next.js, deployee sur Vercel. Architecture moderne : app router, composants serveurs, deploiement continu via GitHub.",
+    impact: "Application deployee en ligne avec une architecture moderne et un cycle de livraison continu.",
     tags: ["Next.js", "Vercel", "React"],
     icon: Rocket,
     links: {
@@ -153,6 +154,7 @@ const EXPERIENCES = [
     company: "Projet personnel · Vue 3 · GitHub Pages",
     description:
       "Creation et gestion d'une marque digitale sur LinkedIn, Instagram, TikTok, WhatsApp. Production de contenu technique et pedagogique. Web-app Vue.js 3 de partage de profils avec QR Code dynamique, deployee sur GitHub Pages.",
+    impact: "Un projet qui relie personal branding, contenu et outil de partage de profil.",
     tags: ["Vue 3", "Vite", "Branding"],
     icon: PenTool,
     links: {
@@ -166,6 +168,7 @@ const EXPERIENCES = [
     company: "Projet technique · Cisco Packet Tracer",
     description:
       "Simulation d'une infrastructure reseau d'entreprise : VLAN (ADMIN/USERS), Inter-VLAN Routing, haute disponibilite (HSRP, Spanning Tree), agregation EtherChannel (LACP), DHCP. Tests valides en charge.",
+    impact: "Architecture documentee pour pratiquer la haute disponibilite et le diagnostic reseau.",
     tags: ["VLAN", "HSRP", "LACP", "DHCP"],
     icon: Network,
   },
@@ -175,6 +178,7 @@ const EXPERIENCES = [
     company: "SUPDECO · Application Java/JavaFX",
     description:
       "Application MVC de gestion scolaire : cours, seances, utilisateurs, presences. 3 dashboards distincts (Chef Admin, Enseignant, Responsable de classe). Stack : Java, JavaFX, MySQL, BCrypt.",
+    impact: "Trois espaces utilisateurs modelises autour de roles metier distincts.",
     tags: ["Java", "JavaFX", "MySQL", "MVC"],
     icon: Code2,
   },
@@ -184,17 +188,18 @@ const EXPERIENCES = [
     company: "SUPDECO Dakar",
     description:
       "Plateforme de gestion de stock en PHP. Premiere experience pro : conception base de donnees, integration frontend, restitution metier.",
+    impact: "Premiere experience professionnelle de la conception a la restitution metier.",
     tags: ["PHP", "MySQL"],
     icon: Briefcase,
   },
 ];
 
 const SKILLS = [
-  { label: "Developpement Web", level: 85, axis: "Dev" },
-  { label: "Communication Digitale", level: 90, axis: "Comm" },
-  { label: "Reseaux & Infrastructure", level: 75, axis: "Net" },
-  { label: "UI Design Frontend", level: 80, axis: "UI" },
-  { label: "Gestion de Projet", level: 85, axis: "Ops" },
+  { label: "Developpement Web", level: 85, levelLabel: "Solide", axis: "Dev" },
+  { label: "Communication Digitale", level: 90, levelLabel: "Operationnel", axis: "Comm" },
+  { label: "Reseaux & Infrastructure", level: 75, levelLabel: "En pratique", axis: "Net" },
+  { label: "UI Design Frontend", level: 80, levelLabel: "Operationnel", axis: "UI" },
+  { label: "Gestion de Projet", level: 85, levelLabel: "Structure", axis: "Ops" },
 ];
 
 const STACK = [
@@ -505,7 +510,7 @@ function Navbar() {
           {/* Identity card */}
           <div className="flex items-center gap-4 p-4 mb-6 rounded-2xl bg-snow/[0.04] border border-snow/10">
             <img
-              src="/img.png"
+              src="/img.webp"
               alt="Portrait de Mouhamed Dione"
               className="w-12 h-12 rounded-full object-cover border-2 border-blue/60"
             />
@@ -728,13 +733,16 @@ function Hero() {
             <div className="hero-reveal mt-5 sm:mt-6 flex items-center gap-3 sm:gap-4">
               <span className="hero-rule block h-px w-12 sm:w-20 bg-blue" />
               <p className="font-serif italic text-snow/85 text-[clamp(1.05rem,2.1vw,1.55rem)] leading-snug">
-                Developpeur web & architecte de presence digitale.
+                Sites web modernes & presence digitale utile.
               </p>
             </div>
 
             <p className="hero-reveal mt-6 sm:mt-8 max-w-xl text-snow/65 leading-relaxed text-[14px] sm:text-[15px]">
-              Je code, je redige, je publie. Un meme cerveau pour livrer
-              l'interface, structurer la marque et tenir le canal sur la duree.
+              Je cree des interfaces claires, des outils utiles et des contenus qui aident une marque a rester visible dans la duree.
+            </p>
+
+            <p className="hero-reveal mt-4 max-w-xl text-blue-soft/90 dark:text-blue-soft text-[11px] sm:text-[12px] font-mono tracking-[0.08em] uppercase">
+              Next.js · Vue.js · PHP · contenu social · base a Thies
             </p>
 
             {/* Stats grid */}
@@ -770,21 +778,21 @@ function Hero() {
             {/* CTAs */}
             <div className="hero-reveal mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <a
-                href="#resume"
+                href="#experience"
                 className="magnetic group relative inline-flex items-center justify-center gap-3 bg-blue text-snow px-6 sm:px-7 py-3.5 sm:py-4 rounded-full font-semibold text-sm overflow-hidden shadow-[0_18px_50px_-12px_rgba(46,91,255,0.75)]"
               >
                 <span className="absolute inset-0 bg-blue-deep translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-magnetic" />
                 <span className="relative flex items-center gap-3">
-                  Telecharger mon CV
-                  <Download size={16} strokeWidth={2.4} />
+                  Voir mes projets
+                  <ArrowUpRight size={16} strokeWidth={2.4} />
                 </span>
               </a>
               <a
                 href="#contact"
                 className="magnetic inline-flex items-center justify-center gap-3 border border-snow/30 text-snow px-6 sm:px-7 py-3.5 sm:py-4 rounded-full font-semibold text-sm hover:border-snow hover:bg-snow/5"
               >
-                Demarrer un projet
-                <ArrowUpRight size={16} strokeWidth={2.4} />
+                Me contacter
+                <Mail size={16} strokeWidth={2.4} />
               </a>
             </div>
           </div>
@@ -815,7 +823,7 @@ function Hero() {
 
               <div className="absolute inset-10 sm:inset-12 rounded-full overflow-hidden border-2 border-blue/60 shadow-[0_30px_80px_-20px_rgba(46,91,255,0.6)] bg-graphite">
                 <img
-                  src="/img.png"
+                  src="/img.webp"
                   alt="Portrait de Mouhamed Dione"
                   className="w-full h-full object-cover"
                   loading="eager"
@@ -931,6 +939,37 @@ function About() {
                 FR · Wolof
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------- SERVICES / MOTION -------------------- */
+function Services() {
+  return (
+    <section id="services" className="relative bg-snow dark:bg-ink text-ink dark:text-snow py-20 sm:py-28 lg:py-32 px-5 sm:px-6 overflow-hidden">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-10 lg:gap-16 items-center">
+        <div>
+          <p className="font-mono text-[10px] sm:text-[11px] tracking-[0.32em] uppercase text-blue mb-5">Services</p>
+          <h2 className="font-serif italic text-[clamp(2.2rem,5vw,4rem)] leading-[1.02]">
+            De l’idee a une presence qui <span className="text-blue">travaille.</span>
+          </h2>
+          <p className="mt-6 text-graphite/75 dark:text-snow/70 max-w-lg leading-relaxed">
+            Je peux intervenir sur une mission complete ou sur une etape precise : cadrage, interface, developpement, mise en ligne et contenu.
+          </p>
+          <a href="#contact" className="magnetic inline-flex items-center gap-2 mt-7 bg-ink dark:bg-blue text-snow px-5 py-3 rounded-full text-sm font-semibold hover:bg-blue dark:hover:bg-blue-deep transition-colors">
+            Discuter d’un besoin <ArrowUpRight size={16} />
+          </a>
+        </div>
+        <div className="motion-stage relative min-h-[300px] sm:min-h-[360px] rounded-[2rem] overflow-hidden bg-ink border border-ink/10 dark:border-snow/10 p-6 sm:p-8">
+          <div className="motion-grid absolute inset-0 opacity-30" />
+          <div className="motion-orb absolute w-40 h-40 sm:w-56 sm:h-56 rounded-[2rem] bg-blue/80 blur-[1px] rotate-12 top-14 left-1/2 -translate-x-1/2 shadow-[0_0_90px_rgba(46,91,255,0.55)]" />
+          <div className="relative z-10 h-full flex flex-col justify-between">
+            <div className="flex items-center justify-between font-mono text-[10px] tracking-[0.24em] uppercase text-snow/55"><span>Motion / 01</span><span className="text-blue">3D teaser</span></div>
+            <div><p className="font-sans font-extrabold uppercase tracking-tightest text-[clamp(2rem,6vw,4rem)] text-snow leading-[0.9]">Build<br/><span className="text-blue">Visible.</span></p><p className="mt-4 text-snow/65 text-sm max-w-xs">Un langage visuel en mouvement pour présenter une marque, une app ou une campagne.</p></div>
+            <div className="flex gap-2"><span className="motion-pill">Web</span><span className="motion-pill">Brand</span><span className="motion-pill">Video</span></div>
           </div>
         </div>
       </div>
@@ -1057,6 +1096,12 @@ function Experience() {
                     <p className="font-sans text-[14px] sm:text-[15px] leading-[1.6] sm:leading-[1.65] text-graphite dark:text-snow/75 mt-4 sm:mt-5">
                       {xp.description}
                     </p>
+                    {xp.impact && (
+                      <p className="mt-4 rounded-2xl bg-blue/[0.07] dark:bg-blue/[0.12] border border-blue/15 px-4 py-3 text-[12.5px] leading-relaxed text-graphite/80 dark:text-snow/80">
+                        <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-blue mr-2">Impact</span>
+                        {xp.impact}
+                      </p>
+                    )}
                     <div className="flex flex-wrap gap-2 mt-5 sm:mt-6">
                       {xp.tags.map((t) => (
                         <span
@@ -1358,11 +1403,8 @@ function SkillsRadar() {
                   <span className="font-sans font-semibold text-snow text-[13.5px] sm:text-[15px]">
                     {s.label}
                   </span>
-                  <span className="font-mono text-blue text-[12px] sm:text-[13px]">
-                    <span className="skill-pct" data-target={s.level}>
-                      0
-                    </span>
-                    %
+                  <span className="font-mono text-blue text-[10px] sm:text-[11px] tracking-[0.16em] uppercase">
+                    {s.levelLabel}
                   </span>
                 </div>
                 <div className="h-[3px] w-full bg-snow/10 rounded-full overflow-hidden">
@@ -1685,6 +1727,7 @@ function ContactForm() {
     name: "",
     email: "",
     subject: "",
+    type: "Site vitrine",
     message: "",
   });
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
@@ -1717,6 +1760,7 @@ function ContactForm() {
           name: data.name.trim(),
           email: data.email.trim(),
           subject: data.subject.trim(),
+          type: data.type,
           message: data.message.trim(),
         }),
       });
@@ -1727,7 +1771,7 @@ function ContactForm() {
       }
 
       setStatus("success");
-      setData({ name: "", email: "", subject: "", message: "" });
+      setData({ name: "", email: "", subject: "", type: "Site vitrine", message: "" });
       setTimeout(() => setStatus("idle"), 8000);
     } catch (err) {
       setStatus("error");
@@ -1815,6 +1859,19 @@ function ContactForm() {
           placeholder="L'objet de ton message"
           className={fieldBase}
         />
+      </div>
+
+      <div className="mt-4 sm:mt-5">
+        <label htmlFor="cf-type" className="block font-mono text-[10px] tracking-[0.25em] uppercase text-snow/55 mb-2">
+          Type de besoin
+        </label>
+        <select id="cf-type" name="type" value={data.type} onChange={update("type")} className={`${fieldBase} appearance-none`}>
+          <option>Site vitrine</option>
+          <option>Application web</option>
+          <option>Communication digitale</option>
+          <option>Stage ou emploi</option>
+          <option>Autre</option>
+        </select>
       </div>
 
       <div className="mt-4 sm:mt-5">
@@ -2163,6 +2220,7 @@ export default function App() {
       <Navbar />
       <Hero />
       <About />
+      <Services />
       <Experience />
       <SkillsRadar />
       <Formation />
